@@ -28,6 +28,8 @@ jobs:
         run: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 
       - name: Build binary
+        env:
+          GOPROXY: direct
         run: |
           CADDY_VER=$(grep 'caddyserver/caddy/v2' go.mod | awk '{print $2}')
           BIN="caddy_wh_frpc_${{ matrix.goos }}_${{ matrix.goarch }}"

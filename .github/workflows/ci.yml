@@ -44,6 +44,8 @@ jobs:
         run: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 
       - name: Build caddy with caddy-frpc
+        env:
+          GOPROXY: direct
         run: |
           CADDY_VER=$(grep 'caddyserver/caddy/v2' go.mod | awk '{print $2}')
           xcaddy build "$CADDY_VER" --with github.com/Hoverhuang-er/caddy-frpc@${{ github.sha }}
