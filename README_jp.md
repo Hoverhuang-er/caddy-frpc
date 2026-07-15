@@ -15,9 +15,30 @@
 
 ## クイックスタート
 
-### バイナリをダウンロード
+### 方法 1: xcaddy でビルド（推奨）
 
-[GitHub Releases](https://github.com/Hoverhuang-er/caddy-frpc/releases) から最新のビルド済み caddy バイナリをダウンロード：
+[xcaddy](https://github.com/caddyserver/xcaddy) を使用して、caddy-frpc モジュールを組み込んだ Caddy バイナリをソースからビルドします。Caddy のバージョンと caddy-frpc のバージョンを完全に制御できます。最新のコードが必要な場合や開発時に使用します。
+
+```bash
+# 最新リリース
+xcaddy build v2.11.4 --with github.com/Hoverhuang-er/caddy-frpc@latest
+
+# 特定のバージョンを指定
+xcaddy build v2.11.4 --with github.com/Hoverhuang-er/caddy-frpc@v0.1.2
+
+# ローカル開発版
+xcaddy build v2.11.4 --with github.com/Hoverhuang-er/caddy-frpc@.
+```
+
+プラグインの埋め込みを確認：
+```bash
+./caddy list-modules | grep frpc
+# 出力: caddy.apps.frpc
+```
+
+### 方法 2: プリビルドバイナリをダウンロード
+
+[GitHub Releases](https://github.com/Hoverhuang-er/caddy-frpc/releases) からプリビルドされたバイナリをダウンロード。ビルドツールは不要です。Linux、macOS、Windows の AMD64 および ARM64 に対応。
 
 ```bash
 # Linux AMD64
@@ -29,13 +50,13 @@ wget -O caddy https://github.com/Hoverhuang-er/caddy-frpc/releases/latest/downlo
 chmod +x caddy
 ```
 
-プラグインの埋め込みを確認：
+確認：
 ```bash
 ./caddy list-modules | grep frpc
 # 出力: caddy.apps.frpc
 ```
 
-### Docker
+### 方法 3: Docker
 
 ```bash
 docker pull ghcr.io/hoverhuang-er/caddy-frpc:latest
@@ -45,7 +66,7 @@ docker run -v ./frpc.toml:/etc/caddy/frpc.toml \
   ghcr.io/hoverhuang-er/caddy-frpc:latest
 ```
 
-### Kubernetes
+### 方法 4: Kubernetes
 
 ConfigMap を作成して frpc と Caddy の設定を保存し、デプロイ：
 

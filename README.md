@@ -22,9 +22,30 @@ frpc visitors create local TCP listeners that tunnel connections through frps to
 
 ## Quick Start
 
-### Download Binary
+### Option 1: Build with xcaddy (recommended)
 
-Download the latest release from [GitHub Releases](https://github.com/Hoverhuang-er/caddy-frpc/releases):
+[xcaddy](https://github.com/caddyserver/xcaddy) builds a Caddy binary with caddy-frpc compiled in from source. This gives you full control over which Caddy version and which caddy-frpc version to use. Use this when you want the latest code, need to pin specific versions, or are developing the module itself.
+
+```bash
+# Latest release
+xcaddy build v2.11.4 --with github.com/Hoverhuang-er/caddy-frpc@latest
+
+# Pin a specific version
+xcaddy build v2.11.4 --with github.com/Hoverhuang-er/caddy-frpc@v0.1.2
+
+# Local development copy
+xcaddy build v2.11.4 --with github.com/Hoverhuang-er/caddy-frpc@.
+```
+
+Verify the plugin is embedded:
+```bash
+./caddy list-modules | grep frpc
+# Output: caddy.apps.frpc
+```
+
+### Option 2: Download pre-built binary
+
+Pre-built binaries are available from [GitHub Releases](https://github.com/Hoverhuang-er/caddy-frpc/releases) for Linux, macOS, and Windows on both AMD64 and ARM64. No build tools required.
 
 ```bash
 # Linux AMD64
@@ -42,7 +63,7 @@ Verify:
 # Output: caddy.apps.frpc
 ```
 
-### Docker
+### Option 3: Docker
 
 ```bash
 docker pull ghcr.io/hoverhuang-er/caddy-frpc:latest
@@ -52,7 +73,7 @@ docker run -v ./frpc.toml:/etc/caddy/frpc.toml \
   ghcr.io/hoverhuang-er/caddy-frpc:latest
 ```
 
-### Kubernetes
+### Option 4: Kubernetes
 
 Create a ConfigMap with your frpc and Caddy config, then deploy:
 

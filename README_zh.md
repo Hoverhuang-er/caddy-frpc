@@ -14,9 +14,30 @@
 
 ## 快速开始
 
-### 下载二进制
+### 方式一：xcaddy 构建（推荐）
 
-从 [GitHub Releases](https://github.com/Hoverhuang-er/caddy-frpc/releases) 下载最新的编译好的 caddy 二进制：
+[xcaddy](https://github.com/caddyserver/xcaddy) 从源码编译嵌入 caddy-frpc 的 Caddy 二进制。你可以自由选择 Caddy 版本和 caddy-frpc 版本，适合需要最新代码或开发时使用。
+
+```bash
+# 最新发布版
+xcaddy build v2.11.4 --with github.com/Hoverhuang-er/caddy-frpc@latest
+
+# 锁定特定版本
+xcaddy build v2.11.4 --with github.com/Hoverhuang-er/caddy-frpc@v0.1.2
+
+# 本地开发版本
+xcaddy build v2.11.4 --with github.com/Hoverhuang-er/caddy-frpc@.
+```
+
+验证插件已嵌入：
+```bash
+./caddy list-modules | grep frpc
+# 输出: caddy.apps.frpc
+```
+
+### 方式二：下载预编译二进制
+
+从 [GitHub Releases](https://github.com/Hoverhuang-er/caddy-frpc/releases) 下载预编译好的二进制。支持 Linux、macOS、Windows 的 AMD64 和 ARM64 平台。无需安装编译工具。
 
 ```bash
 # Linux AMD64
@@ -28,13 +49,13 @@ wget -O caddy https://github.com/Hoverhuang-er/caddy-frpc/releases/latest/downlo
 chmod +x caddy
 ```
 
-验证插件已嵌入：
+验证：
 ```bash
 ./caddy list-modules | grep frpc
 # 输出: caddy.apps.frpc
 ```
 
-### Docker
+### 方式三：Docker
 
 ```bash
 docker pull ghcr.io/hoverhuang-er/caddy-frpc:latest
@@ -44,7 +65,7 @@ docker run -v ./frpc.toml:/etc/caddy/frpc.toml \
   ghcr.io/hoverhuang-er/caddy-frpc:latest
 ```
 
-### Kubernetes
+### 方式四：Kubernetes
 
 创建 ConfigMap 存放 frpc 和 Caddy 配置，然后部署：
 
