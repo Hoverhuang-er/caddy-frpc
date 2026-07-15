@@ -8,6 +8,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](https://github.com/hxgm/caddy-frpc/pulls)
 [![CI](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml/badge.svg)](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml)
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io-blue?logo=docker)](https://github.com/Hoverhuang-er/caddy-frpc/pkgs/container/caddy-frpc)
+[![AI Native](https://img.shields.io/badge/AI%20Native-000000?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNOCAxYy4zOSAwIC43NS4yMy45LjU4bDEuNDcgMy41MiAzLjUzIDEuNDdjLjM1LjE1LjU4LjUxLjU4LjkgMCAuMzktLjIzLjc1LS41OC45bC0zLjUzIDEuNDctMS40NyAzLjUyYy0uMTUuMzUtLjUxLjU4LS45LjU4cy0uNzUtLjIzLS45LS41OGwtMS40Ny0zLjUyLTMuNTMtMS40N2MtLjM1LS4xNS0uNTgtLjUxLS41OC0uOXMuMjMtLjc1LjU4LS45bDMuNTMtMS40N0w3LjEgMS41OGMuMTUtLjM1LjUxLS41OC45LS41OHoiLz48L3N2Zz4=)](https://github.com/Hoverhuang-er/caddy-frpc)
 
 [English](README.md) | [日本語版](README_jp.md)
 
@@ -96,7 +97,7 @@ spec:
 
 [English](README.md) | [日本語版](README_jp.md)
 
-Caddy 应用模块，将 [frpc](https://github.com/fatedier/frp) 作为 Go 库嵌入并以 visitor 模式运行。
+Caddy 应用模块，将 [frpc](https://github.com/fatedier/frp) 作为 Go 库嵌入并以 visitor 模式运行。**AI Native** — 全程通过 AI 驱动的工程流程设计、开发和测试。
 
 frpc visitor 创建本地 TCP 监听器，通过 frps 将连接隧道转发到远程 frpc 客户端上注册的服务。Caddy 管理 frpc 生命周期，并可反向代理到 visitor 监听器，应用完整的中间件链。
 

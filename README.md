@@ -8,12 +8,13 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](https://github.com/hxgm/caddy-frpc/pulls)
 [![CI](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml/badge.svg)](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml)
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io-blue?logo=docker)](https://github.com/Hoverhuang-er/caddy-frpc/pkgs/container/caddy-frpc)
+[![AI Native](https://img.shields.io/badge/AI%20Native-000000?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNOCAxYy4zOSAwIC43NS4yMy45LjU4bDEuNDcgMy41MiAzLjUzIDEuNDdjLjM1LjE1LjU4LjUxLjU4LjkgMCAuMzktLjIzLjc1LS41OC45bC0zLjUzIDEuNDctMS40NyAzLjUyYy0uMTUuMzUtLjUxLjU4LS45LjU4cy0uNzUtLjIzLS45LS41OGwtMS40Ny0zLjUyLTMuNTMtMS40N2MtLjM1LS4xNS0uNTgtLjUxLS41OC0uOXMuMjMtLjc1LjU4LS45bDMuNTMtMS40N0w3LjEgMS41OGMuMTUtLjM1LjUxLS41OC45LS41OHoiLz48L3N2Zz4=)](https://github.com/Hoverhuang-er/caddy-frpc)
 
 ---
 
 [中文版](README_zh.md) | [日本語版](README_jp.md)
 
-Caddy app module that embeds [frpc](https://github.com/fatedier/frp) as a Go library and runs it in visitor mode.
+Caddy app module that embeds [frpc](https://github.com/fatedier/frp) as a Go library and runs it in visitor mode. **AI Native** — designed, developed, and tested entirely through AI-driven engineering workflows.
 
 frpc visitors create local TCP listeners that tunnel connections through frps to services registered on remote frpc clients. Caddy manages the frpc lifecycle and can reverse-proxy to visitor listeners, applying its full middleware chain.
 

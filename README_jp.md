@@ -8,6 +8,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](https://github.com/hxgm/caddy-frpc/pulls)
 [![CI](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml/badge.svg)](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml)
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io-blue?logo=docker)](https://github.com/Hoverhuang-er/caddy-frpc/pkgs/container/caddy-frpc)
+[![AI Native](https://img.shields.io/badge/AI%20Native-000000?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNOCAxYy4zOSAwIC43NS4yMy45LjU4bDEuNDcgMy41MiAzLjUzIDEuNDdjLjM1LjE1LjU4LjUxLjU4LjkgMCAuMzktLjIzLjc1LS41OC45bC0zLjUzIDEuNDctMS40NyAzLjUyYy0uMTUuMzUtLjUxLjU4LS45LjU4cy0uNzUtLjIzLS45LS41OGwtMS40Ny0zLjUyLTMuNTMtMS40N2MtLjM1LS4xNS0uNTgtLjUxLS41OC0uOXMuMjMtLjc1LjU4LS45bDMuNTMtMS40N0w3LjEgMS41OGMuMTUtLjM1LjUxLS41OC45LS41OHoiLz48L3N2Zz4=)](https://github.com/Hoverhuang-er/caddy-frpc)
 
 [English](README.md) | [中文版](README_zh.md)
 
@@ -97,7 +98,7 @@ spec:
 
 [English](README.md) | [中文版](README_zh.md)
 
-[frpc](https://github.com/fatedier/frp) を Go ライブラリとして埋め込み、visitor モードで動作させる Caddy アプリケーションモジュール。
+[frpc](https://github.com/fatedier/frp) を Go ライブラリとして埋め込み、visitor モードで動作させる Caddy アプリケーションモジュール。**AI Native** — AI 駆動のエンジニアリングワークフローを通じて設計、開発、テストされています。
 
 frpc visitor はローカル TCP リスナーを作成し、frps を介してリモート frpc クライアントに登録されたサービスへのトンネル接続を確立します。Caddy が frpc のライフサイクルを管理し、visitor リスナーへのリバースプロキシを通じて完全なミドルウェアチェーンを適用できます。
 
