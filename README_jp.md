@@ -10,16 +10,68 @@
 
 [English](README.md) | [中文版](README_zh.md)
 
-```
-Caddy (caddy.apps.frpc)
-  │
-  ├─ Provision:  frpc.toml / .yaml / .json / .ini を読み込み
-  ├─ Start:      client.NewService → goroutine
-  │                └─ visitors が bindAddr:bindPort に TCP リスナーを作成
-  └─ Stop:       context cancel + GracefulClose
+## アーキテクチャ
+
+```mermaid
+flowchart TB
+    subgraph External["外部ネットワーク"]
+        FRPS["frps (公開サーバー)"]
+        FRPC_A["リモート frpc A<br/>proxy 登録 (stcp/xtcp/sudp)"]
+    end
+
+    subgraph CaddyProcess["Caddy プロセス"]
+        subgraph CaddyHTTP["Caddy HTTP サーバー"]
+            HTTP["HTTP リスナー (:8080)"]
+            MW["ミドルウェアチェーン<br/>auth · headers · rewrite · proxy"]
+            RP["reverse_proxy"]
+        end
+
+        subgraph CaddyFRPC["caddy.apps.frpc モジュール"]
+            PROV["Provision()<br/>設定をロード"]
+            START["Start()<br/>client.NewService"]
+            VISITOR["Visitor Goroutine<br/>[visitor ごとに 1 つ]"]
+            LISTENER["TCP リスナー<br/>bindAddr:bindPort"]
+        end
+
+        subgraph Config["設定"]
+            CFG["frpc.toml / .yaml / .json / .ini"]
+        end
+
+        CFG -->|"loadConfig()"| PROV
+        PROV -->|"frpcConfig"| START
+        START -->|"source.Aggregator"| VISITOR
+        VISITOR -->|"作成"| LISTENER
+    end
+
+    FRPS <==>|"frp 制御 + トンネル"| VISITOR
+    FRPC_A <==>|"stcp/xtcp トンネル"| FRPS
+    HTTP --> MW --> RP -->|"127.0.0.1:bindPort"| LISTENER
 ```
 
-別途 `frpc` バイナリを実行する必要はありません。本モジュールは frp を Go ライブラリとしてインポートし、Caddy の `caddy.App` インターフェース（`Provision` → `Start` → `Stop`）を通じてライフサイクルを管理します。
+**データフロー：**
+- Visitor は起動時に frps との制御接続を確立
+- リモート frpc A が一致する proxy を登録すると、visitor はローカル `bindAddr:bindPort` に TCP リスナーを作成
+- Caddy HTTP サーバーが visitor のローカルリスナーにリバースプロキシ
+- 各 visitor は独立した goroutine で動作；すべてのチャネルは goroutine-safe
+
+### 並行安全性モデル
+
+```mermaid
+flowchart LR
+    subgraph Safe["並行安全性の保証"]
+        MUTEX["sync.Mutex<br/>Start/Stop を保護"]
+        CHAN["バッファ付き channel<br/>goroutine-safe"]
+        CTX["context.Context<br/>キャンセル伝播"]
+    end
+
+    MUTEX --> START_STOP["非再入可能 Start/Stop"]
+    CHAN --> VISITOR_IO["visitor I/O 非ブロッキング"]
+    CTX --> GRACEFUL["Stop() で graceful shutdown"]
+```
+
+- `sync.Mutex` が共有状態 (`svr`, `cancel`) を `Start()`/`Stop()` の同時呼び出しから保護
+- 各 visitor のチャネルは独立して接続をバッファリング—ホットパスに共有書き込みロックなし
+- `context.Context` のキャンセルが Caddy のライフサイクルから全 visitor goroutine に伝播
 
 ## サポートする設定形式
 

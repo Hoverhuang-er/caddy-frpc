@@ -9,17 +9,68 @@
 [![CI](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml/badge.svg)](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml)
 
 [English](README.md) | [日本語版](README_jp.md)
+## 架构
 
-```
-Caddy (caddy.apps.frpc)
-  │
-  ├─ Provision:  加载 frpc.toml / .yaml / .json / .ini
-  ├─ Start:      client.NewService → goroutine
-  │                └─ visitors 在 bindAddr:bindPort 创建 TCP 监听器
-  └─ Stop:       context cancel + GracefulClose
+```mermaid
+flowchart TB
+    subgraph External["外部网络"]
+        FRPS["frps (公网服务器)"]
+        FRPC_A["远端 frpc A<br/>注册 proxy (stcp/xtcp/sudp)"]
+    end
+
+    subgraph CaddyProcess["Caddy 进程"]
+        subgraph CaddyHTTP["Caddy HTTP 服务器"]
+            HTTP["HTTP 监听器 (:8080)"]
+            MW["中间件链<br/>auth · headers · rewrite · proxy"]
+            RP["reverse_proxy"]
+        end
+
+        subgraph CaddyFRPC["caddy.apps.frpc 模块"]
+            PROV["Provision()<br/>加载解析配置"]
+            START["Start()<br/>client.NewService"]
+            VISITOR["Visitor Goroutine<br/>[每个 visitor 一个]"]
+            LISTENER["TCP 监听器<br/>bindAddr:bindPort"]
+        end
+
+        subgraph Config["配置"]
+            CFG["frpc.toml / .yaml / .json / .ini"]
+        end
+
+        CFG -->|"loadConfig()"| PROV
+        PROV -->|"frpcConfig"| START
+        START -->|"source.Aggregator"| VISITOR
+        VISITOR -->|"创建"| LISTENER
+    end
+
+    FRPS <==>|"frp 控制 + 隧道"| VISITOR
+    FRPC_A <==>|"stcp/xtcp 隧道"| FRPS
+    HTTP --> MW --> RP -->|"127.0.0.1:bindPort"| LISTENER
 ```
 
-无需单独运行 `frpc` 二进制，本模块将 frp 作为 Go 库导入。生命周期通过 Caddy 的 `caddy.App` 接口管理（`Provision` → `Start` → `Stop`）。
+**数据流：**
+- Visitor 启动时与 frps 建立控制连接
+- 远端 frpc A 注册了匹配的 proxy 后，visitor 在本地 `bindAddr:bindPort` 创建 TCP 监听器
+- Caddy HTTP 服务器通过反向代理将请求转发到 visitor 的本地监听器
+- 每个 visitor 运行在独立 goroutine 中；所有 channel 是 goroutine-safe 的
+
+### 并发安全模型
+
+```mermaid
+flowchart LR
+    subgraph Safe["并发安全保障"]
+        MUTEX["sync.Mutex<br/>保护 Start/Stop"]
+        CHAN["带缓冲 channel<br/>goroutine-safe"]
+        CTX["context.Context<br/>取消传播"]
+    end
+
+    MUTEX --> START_STOP["不可重入 Start/Stop"]
+    CHAN --> VISITOR_IO["visitor I/O 非阻塞"]
+    CTX --> GRACEFUL["Stop() 时优雅关闭"]
+```
+
+- `sync.Mutex` 保护共享状态 (`svr`, `cancel`) 免受 `Start()`/`Stop()` 并发调用
+- 每个 visitor 的 channel 独立缓冲连接——热路径上无共享写锁
+- `context.Context` 取消从 Caddy 生命周期传播到每个 visitor goroutine
 
 ## 支持的配置格式
 
@@ -31,7 +82,6 @@ Caddy (caddy.apps.frpc)
 | YAML | `.yaml` / `.yml` | |
 | JSON | `.json` | |
 | INI | `.ini` | 旧格式，已被 frp 弃用 |
-
 ## 使用方法
 
 ### 0. 构建

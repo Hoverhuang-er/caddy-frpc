@@ -14,20 +14,71 @@ Caddy app module that embeds [frpc](https://github.com/fatedier/frp) as a Go lib
 
 frpc visitors create local TCP listeners that tunnel connections through frps to services registered on remote frpc clients. Caddy manages the frpc lifecycle and can reverse-proxy to visitor listeners, applying its full middleware chain.
 
-## How It Works
+## Architecture
 
+```mermaid
+flowchart TB
+    subgraph External["External Network"]
+        FRPS["frps (Public Server)"]
+        FRPC_A["Remote frpc A<br/>registers proxy (stcp/xtcp/sudp)"]
+    end
+
+    subgraph CaddyProcess["Caddy Process"]
+        subgraph CaddyHTTP["Caddy HTTP Server"]
+            HTTP["HTTP Listener (:8080)"]
+            MW["Middleware Chain<br/>auth · headers · rewrite · proxy"]
+            RP["reverse_proxy"]
+        end
+
+        subgraph CaddyFRPC["caddy.apps.frpc Module"]
+            PROV["Provision()<br/>load & parse config"]
+            START["Start()<br/>client.NewService"]
+            VISITOR["Visitor Goroutine<br/>[1 per visitor]"]
+            LISTENER["TCP Listener<br/>bindAddr:bindPort"]
+        end
+
+        subgraph Config["Configuration"]
+            CFG["frpc.toml / .yaml / .json / .ini"]
+        end
+
+        CFG -->|"loadConfig()"| PROV
+        PROV -->|"frpcConfig"| START
+        START -->|"source.Aggregator"| VISITOR
+        VISITOR -->|"creates"| LISTENER
+    end
+
+    FRPS <==>|"frp control + tunnel"| VISITOR
+    FRPC_A <==>|"stcp/xtcp tunnel"| FRPS
+    HTTP --> MW --> RP -->|"127.0.0.1:bindPort"| LISTENER
 ```
-Caddy (caddy.apps.frpc)
-  │
-  ├─ Provision:  load frpc.toml / .yaml / .json / .ini
-  ├─ Start:      client.NewService → goroutine
-  │                └─ visitors create TCP listeners on bindAddr:bindPort
-  └─ Stop:       context cancel + GracefulClose
+
+**Data flow:**
+- Visitor establishes a control connection to frps at startup
+- When a remote frpc A registers a matching proxy, the visitor creates a TCP listener on local `bindAddr:bindPort`
+- Caddy's HTTP server reverse-proxies to the visitor's local listener
+- Each visitor runs in its own goroutine; all channels are goroutine-safe
+
+### Concurrency Model
+
+```mermaid
+flowchart LR
+    subgraph Safe["Concurrency Safety Guarantees"]
+        MUTEX["sync.Mutex<br/>guards Start/Stop"]
+        CHAN["buffered channels<br/>goroutine-safe"]
+        CTX["context.Context<br/>cancellation propagation"]
+    end
+
+    MUTEX --> START_STOP["non-reentrant Start/Stop"]
+    CHAN --> VISITOR_IO["visitor I/O non-blocking"]
+    CTX --> GRACEFUL["graceful shutdown on Stop()"]
 ```
 
-Instead of running a separate `frpc` binary, this module imports frp as a Go library. The lifecycle is managed through Caddy's `caddy.App` interface (`Provision` → `Start` → `Stop`).
+- `sync.Mutex` protects shared state (`svr`, `cancel`) from concurrent `Start()`/`Stop()` calls
+- Each visitor's channel buffers connections independently — no shared write lock in hot path
+- `context.Context` cancellation propagates from Caddy's lifecycle to every visitor goroutine
+- `atomic.Bool` (in frpcListener, removed but pattern proven) ensures idempotent close
 
-## Supported Config Formats
+## Visitor Mode
 
 The module accepts frpc config files in these formats:
 
