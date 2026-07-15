@@ -10,13 +10,15 @@ permissions:
   contents: write
 
 jobs:
-  goreleaser:
-    name: GoReleaser
+  build:
+    name: Build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-go@v5
         with:
@@ -25,20 +27,36 @@ jobs:
       - name: Install xcaddy
         run: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 
-      - name: Build release binaries
+      - name: Build binary
         run: |
-          mkdir -p dist
           CADDY_VER=$(grep 'caddyserver/caddy/v2' go.mod | awk '{print $2}')
-          PLATFORMS="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64"
-          for p in $PLATFORMS; do
-            GOOS=${p%/*}
-            GOARCH=${p#*/}
-            BIN="caddy-frpc-${GOOS}-${GOARCH}"
-            echo "Building $BIN ..."
-            GOOS=$GOOS GOARCH=$GOARCH xcaddy build "$CADDY_VER" \
-              --with github.com/Hoverhuang-er/caddy-frpc@${{ github.ref_name }} \
-              -o "dist/$BIN"
-          done
+          BIN="caddy_wh_frpc_${{ matrix.goos }}_${{ matrix.goarch }}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            BIN="${BIN}.exe"
+          fi
+          mkdir -p dist
+          echo "Building ${BIN} (${{ matrix.goos }}/${{ matrix.goarch }}) ..."
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
+            xcaddy build "$CADDY_VER" \
+            --with github.com/Hoverhuang-er/caddy-frpc@${{ github.ref_name }} \
+            -o "dist/${BIN}"
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/
+
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "*-*"
+          merge-multiple: true
+          path: dist/
 
       - name: Generate checksums
         run: |
