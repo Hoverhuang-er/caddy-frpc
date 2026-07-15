@@ -38,7 +38,12 @@ jobs:
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
             xcaddy build "$CADDY_VER" \
             --with github.com/Hoverhuang-er/caddy-frpc@${{ github.ref_name }}
-          mv caddy "dist/${BIN}"
+          # xcaddy produces 'caddy' on linux/darwin, 'caddy.exe' on windows
+          if [ -f caddy.exe ]; then
+            mv caddy.exe "dist/${BIN}"
+          elif [ -f caddy ]; then
+            mv caddy "dist/${BIN}"
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.goos }}-${{ matrix.goarch }}
