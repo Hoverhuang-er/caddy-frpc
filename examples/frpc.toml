@@ -1,0 +1,36 @@
+# frpc.toml — caddy-frpc example configuration (TOML format)
+# Usage: caddy run --config examples/frpc.toml
+
+# frps server connection
+serverAddr = "frps.example.com"
+serverPort = 7000
+
+# Authentication
+auth.token = "my-token"
+
+# Transport (optional)
+[transport]
+protocol = "tcp"
+poolCount = 4
+
+# Logging (optional)
+[log]
+level = "info"
+
+# STCP visitor: tunnel to a remote service through frps
+[[visitors]]
+name = "web-service"
+type = "stcp"
+serverName = "backend-web"
+secretKey = "shared-secret"
+bindAddr = "127.0.0.1"
+bindPort = 8000
+
+# XTCP visitor: P2P tunnel (try direct connection first, fallback to relay)
+[[visitors]]
+name = "p2p-service"
+type = "xtcp"
+serverName = "remote-p2p"
+secretKey = "p2p-secret"
+bindAddr = "127.0.0.1"
+bindPort = 9000

@@ -1,0 +1,15 @@
+commit d7b2d70
+Author: shuhaoHuang <huangshuhao@logiocean.com>
+Date:   Wed Jul 15 09:51:34 2026 +0800
+
+    feat: add main FRPC module with Provision/WrapListener
+
+Files changed:
+ frpc.go      | 229 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ config.go    |   6 +++--
+ listener.go  |   9 +++++++++
+ 3 files changed, 242 insertions(+), 2 deletions(-)
+
+Build:   go build ./... — clean
+Vet:     go vet ./... — clean
+Tests:   7/7 pass

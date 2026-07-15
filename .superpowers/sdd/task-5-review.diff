@@ -1,0 +1,37 @@
+diff --git a/caddyfile.go b/caddyfile.go
+new file mode 100644
+index 0000000..3a94eb1
+--- /dev/null
++++ b/caddyfile.go
+@@ -0,0 +1,31 @@
++package frpc
++
++import (
++	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
++)
++
++// UnmarshalCaddyfile implements caddyfile.Unmarshaler.
++//
++// Syntax:
++//
++//	frpc <config_path>
++//
++// Example:
++//
++//	frpc ./frpc.toml
++func (f *FRPC) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
++	for d.Next() {
++		if !d.Args(&f.ConfigFile) {
++			return d.ArgErr()
++		}
++		if d.NextArg() {
++			return d.ArgErr()
++		}
++	}
++	return nil
++}
++
++// Interface assertions
++var (
++	_ caddyfile.Unmarshaler = (*FRPC)(nil)
++)

@@ -1,0 +1,23 @@
+ .superpowers/sdd/current-task                      |    1 +
+ .superpowers/sdd/progress.md                       |    4 +
+ .superpowers/sdd/task-1-brief.md                   |   40 +
+ .superpowers/sdd/task-1-report.md                  |   31 +
+ .superpowers/sdd/task-1-review-commits.txt         |    0
+ .superpowers/sdd/task-1-review-stat.txt            |   10 +
+ .superpowers/sdd/task-1-review.diff                |  210 ++++
+ .superpowers/sdd/task-2-brief.md                   |  201 ++++
+ .superpowers/sdd/task-2-report.md                  |   41 +
+ .superpowers/sdd/task-3-brief.md                   |  183 ++++
+ .superpowers/sdd/task-3-report.md                  |   37 +
+ .superpowers/sdd/task-3-review-stat.txt            |    5 +
+ .superpowers/sdd/task-3-review.diff                |  526 +++++++++
+ .superpowers/sdd/task-4-brief.md                   |  236 +++++
+ caddyfile.go                                       |   31 +
+ config.go                                          |   41 +
+ docs/superpowers/plans/2026-07-15-caddy-frpc.md    | 1117 ++++++++++++++++++++
+ .../specs/2026-07-15-caddy-frpc-design.md          |  307 ++++++
+ frpc.go                                            |  151 +++
+ frpc_test.go                                       |   59 ++
+ go.mod                                             |  101 +-
+ go.sum                                             |  320 ++++--
+ 22 files changed, 3557 insertions(+), 95 deletions(-)

@@ -1,0 +1,10 @@
+commit d51634721b75bb2dfe520780f915c5785862f10d
+Author: shuhaoHuang <huangshuhao@logiocean.com>
+Date:   Wed Jul 15 09:48:47 2026 +0800
+
+    chore: scaffold caddy-frpc module
+
+ Makefile |  13 +++++++
+ go.mod   |  41 ++++++++++++++++++++
+ go.sum   | 132 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 186 insertions(+)

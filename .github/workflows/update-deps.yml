@@ -1,0 +1,95 @@
+# Auto-update workflow: check latest caddy and frp releases weekly,
+# update go.mod, and open a PR if newer versions are found.
+name: Update Dependencies
+
+on:
+  schedule:
+    # Every Monday 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    # Allow manual trigger
+
+jobs:
+  check:
+    name: Check for Updates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Get current versions
+        id: current
+        run: |
+          echo "caddy=$(grep 'caddyserver/caddy/v2' go.mod | awk '{print $2}')" >> $GITHUB_OUTPUT
+          echo "frp=$(grep 'fatedier/frp' go.mod | awk '{print $2}')" >> $GITHUB_OUTPUT
+
+      - name: Check latest caddy release
+        id: caddy-latest
+        run: |
+          LATEST=$(gh release view --repo caddyserver/caddy --json tagName --jq .tagName 2>/dev/null || echo "unknown")
+          echo "version=$LATEST" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Check latest frp release
+        id: frp-latest
+        run: |
+          LATEST=$(gh release view --repo fatedier/frp --json tagName --jq .tagName 2>/dev/null || echo "unknown")
+          echo "version=$LATEST" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Update dependencies
+        id: update
+        run: |
+          CURRENT_CADDY="${{ steps.current.outputs.caddy }}"
+          LATEST_CADDY="${{ steps.caddy-latest.outputs.version }}"
+          CURRENT_FRP="${{ steps.current.outputs.frp }}"
+          LATEST_FRP="${{ steps.frp-latest.outputs.version }}"
+
+          echo "caddy: $CURRENT_CADDY → $LATEST_CADDY"
+          echo "frp: $CURRENT_FRP → $LATEST_FRP"
+
+          UPDATED=false
+
+          if [ "$LATEST_CADDY" != "unknown" ] && [ "$LATEST_CADDY" != "$CURRENT_CADDY" ]; then
+            echo "Updating caddy to $LATEST_CADDY ..."
+            go get "github.com/caddyserver/caddy/v2@$LATEST_CADDY"
+            UPDATED=true
+          fi
+
+          if [ "$LATEST_FRP" != "unknown" ] && [ "$LATEST_FRP" != "$CURRENT_FRP" ]; then
+            echo "Updating frp to $LATEST_FRP ..."
+            go get "github.com/fatedier/frp@$LATEST_FRP"
+            UPDATED=true
+          fi
+
+          if [ "$UPDATED" = "true" ]; then
+            go mod tidy
+            echo "updated=true" >> $GITHUB_OUTPUT
+          else
+            echo "updated=false" >> $GITHUB_OUTPUT
+            echo "All dependencies up to date."
+          fi
+
+      - name: Create Pull Request
+        if: steps.update.outputs.updated == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          commit-message: "chore: update caddy and frp dependencies"
+          title: "chore: auto-update caddy and frp dependencies"
+          body: |
+            Automated dependency update.
+
+            - Caddy: ${{ steps.current.outputs.caddy }} → ${{ steps.caddy-latest.outputs.version }}
+            - frp: ${{ steps.current.outputs.frp }} → ${{ steps.frp-latest.outputs.version }}
+
+            CI will run build, vet, and tests against the updated versions.
+            Merge this PR to trigger a new release.
+          branch: deps/auto-update
+          delete-branch: true
+          labels: dependencies, automated

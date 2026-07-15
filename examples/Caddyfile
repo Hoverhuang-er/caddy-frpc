@@ -1,0 +1,31 @@
+# Caddyfile — caddy-frpc example configuration
+# Usage: caddy run --config examples/Caddyfile
+#
+# This Caddyfile starts frpc with STCP/XTCP visitors that tunnel
+# through frps to remote services. Caddy reverse-proxies to the
+# visitor listeners on localhost.
+
+# Global options block
+{
+    # Start frpc in visitor mode with the frpc configuration file
+    frpc ./examples/frpc.toml
+
+    # Alternative: use an inline frpc config path
+    # frpc {
+    #     config ./examples/frpc.ini
+    # }
+}
+
+# HTTP server on port 8080
+:8080 {
+    # Route root path to the web-service visitor tunnel
+    # The visitor creates a listener on 127.0.0.1:8000
+    # that tunnels through frps to the remote backend-web service
+    root * /var/www/html
+    reverse_proxy 127.0.0.1:8000
+}
+
+# Another server on port 9090 for the P2P service
+:9090 {
+    reverse_proxy 127.0.0.1:9000
+}

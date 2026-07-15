@@ -1,0 +1,525 @@
+diff --git a/caddyfile.go b/caddyfile.go
+new file mode 100644
+index 0000000..3a94eb1
+--- /dev/null
++++ b/caddyfile.go
+@@ -0,0 +1,31 @@
++package frpc
++
++import (
++	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
++)
++
++// UnmarshalCaddyfile implements caddyfile.Unmarshaler.
++//
++// Syntax:
++//
++//	frpc <config_path>
++//
++// Example:
++//
++//	frpc ./frpc.toml
++func (f *FRPC) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
++	for d.Next() {
++		if !d.Args(&f.ConfigFile) {
++			return d.ArgErr()
++		}
++		if d.NextArg() {
++			return d.ArgErr()
++		}
++	}
++	return nil
++}
++
++// Interface assertions
++var (
++	_ caddyfile.Unmarshaler = (*FRPC)(nil)
++)
+diff --git a/config.go b/config.go
+index a9056a0..6568972 100644
+--- a/config.go
++++ b/config.go
+@@ -1,55 +1,41 @@
+ package frpc
+ 
+ import (
+ 	"fmt"
+ 	"log/slog"
+ 
+ 	v1 "github.com/fatedier/frp/pkg/config/v1"
+ 	"github.com/fatedier/frp/pkg/config"
+ )
+ 
+-// frpcConfig holds parsed common config, filtered HTTP/HTTPS proxies, and all visitors.
++// frpcConfig holds parsed common config and visitors.
+ type frpcConfig struct {
+-	Common       *v1.ClientCommonConfig
+-	HTTPProxies  []v1.HTTPProxyConfig
+-	HTTPSProxies []v1.HTTPSProxyConfig
+-	Visitors     []v1.VisitorConfigurer
++	Common   *v1.ClientCommonConfig
++	Visitors []v1.VisitorConfigurer
+ }
+ 
+-// loadConfig loads a frpc config file (TOML or INI), returning common client
+-// config and only HTTP/HTTPS proxy configs. Other proxy types are logged and skipped.
++// loadConfig loads a frpc config file (TOML or INI), returning common client config
++// and visitor configs. Proxy configs are logged and skipped.
+ func loadConfig(path string) (*frpcConfig, error) {
+ 	if path == "" {
+ 		return nil, fmt.Errorf("frpc config path is empty")
+ 	}
+ 
+ 	result, err := config.LoadClientConfigResult(path, true)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("failed to load frpc config from %s: %w", path, err)
+ 	}
+ 
+ 	cfg := &frpcConfig{
+ 		Common:   result.Common,
+ 		Visitors: result.Visitors,
+ 	}
+ 
+ 	for _, pc := range result.Proxies {
+ 		base := pc.GetBaseConfig()
+-		switch base.Type {
+-		case "http":
+-			if hc, ok := pc.(*v1.HTTPProxyConfig); ok {
+-				hc.Complete()
+-				cfg.HTTPProxies = append(cfg.HTTPProxies, *hc)
+-			}
+-		case "https":
+-			if hc, ok := pc.(*v1.HTTPSProxyConfig); ok {
+-				hc.Complete()
+-				cfg.HTTPSProxies = append(cfg.HTTPSProxies, *hc)
+-			}
+-		default:
+-			slog.Warn("skipping non-HTTP proxy", "name", base.Name, "type", base.Type)
+-		}
++		slog.Warn("skipping non-visitor proxy config; visitor mode does not use proxies",
++			"name", base.Name, "type", base.Type)
+ 	}
+ 
+ 	return cfg, nil
+ }
+diff --git a/frpc.go b/frpc.go
+index aa37acf..ffeb003 100644
+--- a/frpc.go
++++ b/frpc.go
+@@ -1,229 +1,147 @@
+ package frpc
+ 
+ import (
+ 	"context"
+ 	"fmt"
+ 	"log/slog"
+-	"net"
+ 	"sync"
+ 
+ 	"github.com/caddyserver/caddy/v2"
+ 	"github.com/fatedier/frp/client"
+ 	"github.com/fatedier/frp/pkg/config"
+ 	"github.com/fatedier/frp/pkg/config/source"
+-	v1 "github.com/fatedier/frp/pkg/config/v1"
+ 	"github.com/fatedier/frp/pkg/config/v1/validation"
+-	"github.com/fatedier/frp/pkg/msg"
+ 	"github.com/fatedier/frp/pkg/policy/security"
+ )
+ 
+ func init() {
+ 	caddy.RegisterModule(new(FRPC))
+ }
+ 
+-// FRPC is a Caddy listener_wrapper that embeds frpc.
++// FRPC is a Caddy app that embeds an frpc client in visitor mode.
+ type FRPC struct {
+ 	// ConfigFile is the path to the frpc configuration file.
+ 	ConfigFile string `json:"config_file,omitempty"`
+ 
+-	frpcCfg   *frpcConfig
+-	listeners map[string]*frpcListener
+-	svr       *client.Service
+-	cancel    context.CancelFunc
+-	ctx       context.Context
+-	mu        sync.Mutex
++	frpcCfg *frpcConfig
++	svr     *client.Service
++	cancel  context.CancelFunc
++	ctx     context.Context
++	mu      sync.Mutex
+ }
+ 
+ // CaddyModule returns the module information.
+ func (f *FRPC) CaddyModule() caddy.ModuleInfo {
+ 	return caddy.ModuleInfo{
+-		ID: "caddy.listeners.frpc",
++		ID: "caddy.apps.frpc",
+ 		New: func() caddy.Module {
+ 			return new(FRPC)
+ 		},
+ 	}
+ }
+ 
+-// listenerBufferSize returns the channel buffer size for proxy listeners.
+-// Uses at least 64, or poolCount from transport config if larger.
+-func listenerBufferSize(cfg *frpcConfig) int {
+-	const defaultBuf = 64
+-	if cfg == nil || cfg.Common == nil {
+-		return defaultBuf
+-	}
+-	poolCount := cfg.Common.Transport.PoolCount
+-	if poolCount > defaultBuf {
+-		return poolCount
+-	}
+-	return defaultBuf
+-}
+-
+ // Provision implements caddy.Provisioner.
+ func (f *FRPC) Provision(ctx caddy.Context) error {
+-	f.listeners = make(map[string]*frpcListener)
+ 	f.ctx = context.Background()
+ 
+ 	if f.ConfigFile == "" {
+ 		return fmt.Errorf("frpc config_file is required")
+ 	}
+ 
+ 	cfg, err := loadConfig(f.ConfigFile)
+ 	if err != nil {
+ 		return fmt.Errorf("loading frpc config: %w", err)
+ 	}
+ 	f.frpcCfg = cfg
+ 
+-	total := len(cfg.HTTPProxies) + len(cfg.HTTPSProxies)
+-	if total == 0 {
+-		slog.Warn("no HTTP/HTTPS proxies found in frpc config; frpc will not start")
+-		return nil
+-	}
+-
+-	bufSize := listenerBufferSize(cfg)
+-
+-	for _, p := range cfg.HTTPProxies {
+-		addr := fmt.Sprintf(":%d", p.LocalPort)
+-		ln := newFRPCListenerBuf(p.Name, addr, bufSize)
+-		f.listeners[p.Name] = ln
+-		slog.Info("registered HTTP proxy listener",
+-			"proxy", p.Name, "addr", addr, "domains", p.CustomDomains,
+-			"bufSize", bufSize)
+-	}
+-	for _, p := range cfg.HTTPSProxies {
+-		addr := fmt.Sprintf(":%d", p.LocalPort)
+-		ln := newFRPCListenerBuf(p.Name, addr, bufSize)
+-		f.listeners[p.Name] = ln
+-		slog.Info("registered HTTPS proxy listener",
+-			"proxy", p.Name, "addr", addr, "domains", p.CustomDomains,
+-			"bufSize", bufSize)
++	if len(cfg.Visitors) == 0 {
++		slog.Warn("no visitors found in frpc config; frpc will not accept connections")
+ 	}
+ 
+ 	return nil
+ }
+ 
+-// WrapListener implements caddy.ListenerWrapper by starting the frpc service
+-// and returning a multiListener that yields work connections from frps.
+-func (f *FRPC) WrapListener(_ net.Listener) net.Listener {
+-	if len(f.listeners) == 0 {
+-		ln := newFRPCListener("default", ":0")
+-		close(ln.ConnChan())
+-		return ln
+-	}
+-
++// Start implements caddy.App by launching the frpc client service.
++func (f *FRPC) Start() error {
+ 	f.mu.Lock()
+ 	defer f.mu.Unlock()
+ 
+ 	cfg := f.frpcCfg
++	if cfg == nil {
++		return fmt.Errorf("frpc not provisioned")
++	}
++
+ 	configSource := source.NewConfigSource()
+-	proxyCfgurers := proxyConfigurers(cfg)
+-	visitorCfgurers := cfg.Visitors
+-	if err := configSource.ReplaceAll(proxyCfgurers, visitorCfgurers); err != nil {
+-		slog.Error("failed to set config source", "error", err)
+-		return f.fallbackListener()
++	if err := configSource.ReplaceAll(nil, cfg.Visitors); err != nil {
++		return fmt.Errorf("setting config source: %w", err)
+ 	}
+ 
+ 	aggregator := source.NewAggregator(configSource)
+ 	proxyCfgs, visitorCfgs, err := aggregator.Load()
+ 	if err != nil {
+-		slog.Error("aggregator load failed", "error", err)
+-		return f.fallbackListener()
++		return fmt.Errorf("aggregator load: %w", err)
+ 	}
+ 	proxyCfgs, visitorCfgs = config.FilterClientConfigurers(cfg.Common, proxyCfgs, visitorCfgs)
+ 	proxyCfgs = config.CompleteProxyConfigurers(proxyCfgs)
+ 	visitorCfgs = config.CompleteVisitorConfigurers(visitorCfgs)
+ 
+ 	warning, err := validation.ValidateAllClientConfig(cfg.Common, proxyCfgs, visitorCfgs, &security.UnsafeFeatures{})
+ 	if warning != nil {
+ 		slog.Warn("frpc config validation warning", "warning", warning)
+ 	}
+ 	if err != nil {
+-		slog.Error("frpc config validation error", "error", err)
+-		return f.fallbackListener()
++		return fmt.Errorf("config validation: %w", err)
+ 	}
+ 
+ 	ctx, cancel := context.WithCancel(f.ctx)
+ 	f.cancel = cancel
+ 
+-	handleCb := func(baseCfg *v1.ProxyBaseConfig, conn net.Conn, m *msg.StartWorkConn) bool {
+-		ln, ok := f.listeners[baseCfg.Name]
+-		if !ok {
+-			slog.Warn("received work conn for unknown proxy", "name", baseCfg.Name)
+-			return true
+-		}
+-		select {
+-		case ln.ConnChan() <- conn:
+-			return false
+-		default:
+-			slog.Error("listener channel full, dropping work conn", "proxy", baseCfg.Name)
+-			conn.Close()
+-			return false
+-		}
+-	}
+-
+ 	svr, err := client.NewService(client.ServiceOptions{
+ 		Common:                 cfg.Common,
+ 		ConfigSourceAggregator: aggregator,
+ 		ConfigFilePath:         f.ConfigFile,
+ 		UnsafeFeatures:         &security.UnsafeFeatures{},
+-		HandleWorkConnCb:       handleCb,
+ 	})
+ 	if err != nil {
+-		slog.Error("failed to create frpc service", "error", err)
+ 		cancel()
+-		return f.fallbackListener()
++		f.cancel = nil
++		return fmt.Errorf("creating frpc service: %w", err)
+ 	}
+ 	f.svr = svr
+ 
+ 	go func() {
+ 		if err := svr.Run(ctx); err != nil {
+ 			slog.Error("frpc service exited", "error", err)
+ 		}
+ 	}()
+ 
+-	return newMultiListener(f.listeners)
+-}
+-
+-// fallbackListener returns a closed listener when frpc fails to start.
+-func (f *FRPC) fallbackListener() net.Listener {
+-	ln := newFRPCListener("error", ":0")
+-	close(ln.ConnChan())
+-	return ln
++	return nil
+ }
+ 
+-// Cleanup implements caddy.CleanerUpper.
+-func (f *FRPC) Cleanup() error {
++// Stop implements caddy.App by gracefully stopping the frpc client service.
++func (f *FRPC) Stop() error {
+ 	f.mu.Lock()
+ 	defer f.mu.Unlock()
+ 	if f.cancel != nil {
+ 		f.cancel()
++		f.cancel = nil
+ 	}
+ 	if f.svr != nil {
+ 		f.svr.GracefulClose(0)
+-	}
+-	for _, ln := range f.listeners {
+-		ln.Close()
++		f.svr = nil
+ 	}
+ 	return nil
+ }
+ 
+-// proxyConfigurers converts HTTP/HTTPS configs back to ProxyConfigurer slice.
+-func proxyConfigurers(cfg *frpcConfig) []v1.ProxyConfigurer {
+-	out := make([]v1.ProxyConfigurer, 0, len(cfg.HTTPProxies)+len(cfg.HTTPSProxies))
+-	for _, p := range cfg.HTTPProxies {
+-		p := p
+-		out = append(out, &p)
+-	}
+-	for _, p := range cfg.HTTPSProxies {
+-		p := p
+-		out = append(out, &p)
+-	}
+-	return out
++// Cleanup implements caddy.CleanerUpper.
++func (f *FRPC) Cleanup() error {
++	return f.Stop()
+ }
+ 
+ // Ensure interface compliance
+ var (
+-	_ caddy.Module          = (*FRPC)(nil)
+-	_ caddy.Provisioner     = (*FRPC)(nil)
+-	_ caddy.ListenerWrapper = (*FRPC)(nil)
+-	_ caddy.CleanerUpper    = (*FRPC)(nil)
++	_ caddy.Module       = (*FRPC)(nil)
++	_ caddy.Provisioner  = (*FRPC)(nil)
++	_ caddy.App          = (*FRPC)(nil)
++	_ caddy.CleanerUpper = (*FRPC)(nil)
+ )
+diff --git a/frpc_test.go b/frpc_test.go
+index 1e91223..41d0767 100644
+--- a/frpc_test.go
++++ b/frpc_test.go
+@@ -1,18 +1,31 @@
+ package frpc
++
+ import (
+ 	"net"
+ 	"os"
+ 	"path/filepath"
+ 	"testing"
++
++	"github.com/caddyserver/caddy/v2"
+ )
+ 
++func TestFRPCModuleID(t *testing.T) {
++	mod, err := caddy.GetModule("caddy.apps.frpc")
++	if err != nil {
++		t.Fatalf("module caddy.apps.frpc not registered: %v", err)
++	}
++	if mod.ID != "caddy.apps.frpc" {
++		t.Fatalf("expected module ID caddy.apps.frpc, got %s", mod.ID)
++	}
++}
++
+ func TestFRPCListenerAcceptClose(t *testing.T) {
+ 	l := newFRPCListener("test-proxy", ":8080")
+ 	defer l.Close()
+ 
+ 	done := make(chan struct{})
+ 	go func() {
+ 		conn1, conn2 := net.Pipe()
+ 		defer conn2.Close()
+ 		l.ConnChan() <- conn1
+ 		done <- struct{}{}
+@@ -61,108 +74,50 @@ func TestMultiListener(t *testing.T) {
+ 	}()
+ 
+ 	conn, err := ml.Accept()
+ 	if err != nil {
+ 		t.Fatalf("multiListener Accept() error: %v", err)
+ 	}
+ 	conn.Close()
+ 	<-done
+ }
+ 
+-func TestLoadConfigTOML(t *testing.T) {
++func TestLoadConfigWithVisitor(t *testing.T) {
+ 	tmp := t.TempDir()
+ 	cfgPath := filepath.Join(tmp, "frpc.toml")
+ 	content := `
+ serverAddr = "frps.example.com"
+ serverPort = 7000
+ auth.token = "secret"
+ 
+-[[proxies]]
+-name = "web"
+-type = "http"
+-localIP = "127.0.0.1"
+-localPort = 8080
+-customDomains = ["web.example.com"]
+-locations = ["/"]
+-
+-[[proxies]]
+-name = "api"
+-type = "http"
+-localIP = "127.0.0.1"
+-localPort = 9000
+-
+-[[proxies]]
+-name = "ssh-tunnel"
+-type = "tcp"
+-localIP = "127.0.0.1"
+-localPort = 22
+-remotePort = 6000
+-
+-[[proxies]]
+-name = "secure"
+-type = "https"
+-localIP = "127.0.0.1"
+-localPort = 443
+-customDomains = ["secure.example.com"]
++[[visitors]]
++name = "dashboard"
++type = "stcp"
++bindAddr = "127.0.0.1"
++bindPort = 7500
++serverUser = "admin"
+ `
+ 	if err := os.WriteFile(cfgPath, []byte(content), 0644); err != nil {
+ 		t.Fatal(err)
+ 	}
+ 
+ 	cfg, err := loadConfig(cfgPath)
+ 	if err != nil {
+ 		t.Fatalf("loadConfig() error: %v", err)
+ 	}
+ 	if cfg.Common.ServerAddr != "frps.example.com" {
+ 		t.Fatalf("expected frps.example.com, got %s", cfg.Common.ServerAddr)
+ 	}
+ 	if cfg.Common.ServerPort != 7000 {
+ 		t.Fatalf("expected 7000, got %d", cfg.Common.ServerPort)
+ 	}
+-	if len(cfg.HTTPProxies) != 2 {
+-		t.Fatalf("expected 2 HTTP proxies, got %d", len(cfg.HTTPProxies))
+-	}
+-	if cfg.HTTPProxies[0].Name != "web" {
+-		t.Fatalf("expected proxy name web, got %s", cfg.HTTPProxies[0].Name)
+-	}
+-	if len(cfg.HTTPSProxies) != 1 {
+-		t.Fatalf("expected 1 HTTPS proxy, got %d", len(cfg.HTTPSProxies))
+-	}
+-}
+-
+-func TestLoadConfigNoHTTPProxy(t *testing.T) {
+-	tmp := t.TempDir()
+-	cfgPath := filepath.Join(tmp, "frpc.toml")
+-	content := `
+-serverAddr = "frps.example.com"
+-serverPort = 7000
+-
+-[[proxies]]
+-name = "ssh"
+-type = "tcp"
+-localIP = "127.0.0.1"
+-localPort = 22
+-remotePort = 6000
+-`
+-	if err := os.WriteFile(cfgPath, []byte(content), 0644); err != nil {
+-		t.Fatal(err)
+-	}
+-
+-	cfg, err := loadConfig(cfgPath)
+-	if err != nil {
+-		t.Fatalf("loadConfig() error: %v", err)
+-	}
+-	if len(cfg.HTTPProxies)+len(cfg.HTTPSProxies) != 0 {
+-		t.Fatalf("expected 0 http/https proxies, got %d http + %d https",
+-			len(cfg.HTTPProxies), len(cfg.HTTPSProxies))
+-	}
+-	if cfg.Common.ServerAddr != "frps.example.com" {
+-		t.Fatalf("expected frps.example.com, got %s", cfg.Common.ServerAddr)
++	if len(cfg.Visitors) != 1 {
++		t.Fatalf("expected 1 visitor, got %d", len(cfg.Visitors))
+ 	}
+ }
+ 
+ func TestLoadConfigNotFound(t *testing.T) {
+ 	_, err := loadConfig("/nonexistent/frpc.toml")
+ 	if err == nil {
+ 		t.Fatal("expected error for nonexistent file")
+ 	}
+ }

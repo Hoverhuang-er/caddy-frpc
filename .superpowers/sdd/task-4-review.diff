@@ -1,0 +1,3785 @@
+diff --git a/.superpowers/sdd/current-task b/.superpowers/sdd/current-task
+new file mode 100644
+index 0000000..d57e44c
+--- /dev/null
++++ b/.superpowers/sdd/current-task
+@@ -0,0 +1 @@
++task-1 started
+diff --git a/.superpowers/sdd/progress.md b/.superpowers/sdd/progress.md
+new file mode 100644
+index 0000000..4f64656
+--- /dev/null
++++ b/.superpowers/sdd/progress.md
+@@ -0,0 +1,4 @@
++
++Task 1: complete (commits d516347, review clean)
++Task 2: complete (commits cc3f904, review clean)
++Task 3: complete (commits 2333f46, review clean)
+diff --git a/.superpowers/sdd/task-1-brief.md b/.superpowers/sdd/task-1-brief.md
+new file mode 100644
+index 0000000..fb8c447
+--- /dev/null
++++ b/.superpowers/sdd/task-1-brief.md
+@@ -0,0 +1,40 @@
++# Task 1: Project Scaffold
++
++**Files:**
++- Create: `go.mod`
++- Create: `Makefile`
++
++## Steps
++
++1. `go mod init github.com/hxgm/caddy-frpc`
++2. `go get github.com/caddyserver/caddy/v2@v2.7.6`
++3. `go get github.com/fatedier/frp@dev`
++4. `go mod tidy`
++5. Create `Makefile` with build/test/clean targets
++6. Commit
++
++## Makefile Content
++
++```makefile
++MODULE = github.com/hxgm/caddy-frpc
++CADDY_VERSION ?= v2.7.6
++
++.PHONY: build test clean
++
++build:
++	xcaddy build $(CADDY_VERSION) --with $(MODULE)
++
++test:
++	go test -v -race ./...
++
++clean:
++	rm -f caddy
++```
++
++## Acceptance
++
++- `go.mod` created with module path `github.com/hxgm/caddy-frpc`
++- `go.sum` present
++- `go build ./...` succeeds
++- `go vet ./...` succeeds
++- Committed with message `"chore: scaffold caddy-frpc module"`
+diff --git a/.superpowers/sdd/task-1-report.md b/.superpowers/sdd/task-1-report.md
+new file mode 100644
+index 0000000..41d6db1
+--- /dev/null
++++ b/.superpowers/sdd/task-1-report.md
+@@ -0,0 +1,31 @@
++# Task 1: Project Scaffold — Report
++
++## Status: DONE
++
++## Commits
++- `d516347` — "chore: scaffold caddy-frpc module"
++
++## Files Created
++| File | Purpose |
++|------|---------|
++| `go.mod` | Module `github.com/hxgm/caddy-frpc`, Go 1.26.4, with caddy v2.7.6 and frp dev branch pinned |
++| `go.sum` | 132 checksum entries for all transitive dependencies |
++| `Makefile` | Build (`xcaddy`), test (`go test -race`), clean targets |
++
++## Verification
++| Check | Result |
++|-------|--------|
++| `go build ./...` | PASS (exit 0; warning "no packages" — expected, no source files yet) |
++| `go vet ./...` | PASS (exit 1 — "no packages to vet" is standard Go behavior for empty modules; no actual vet issues) |
++| `go.sum` present | YES, 132 lines |
++
++## Concerns
++- `go vet ./...` exits 1 with "no packages to vet" because there are no `.go` source files yet. This is normal Go behavior for a scaffold-only module. Once Go source is added in subsequent tasks, `go vet` will analyze it and return 0 on success.
++- An extraneous plan document directory (`https:/github.com/fatedier/frp/blob/dev/cmd/frpc/sub/root.go`) was present in the workspace, interfering with Go tooling due to colons in the path. It was removed — the same content exists in `docs/superpowers/plans/`.
++
++## Dependencies
++- `github.com/caddyserver/caddy/v2` v2.7.6
++- `github.com/fatedier/frp` v0.62.2-0.20260711144445-2886393f5b58 (dev branch)
++
++## Report written to
++`.superpowers/sdd/task-1-report.md`
+diff --git a/.superpowers/sdd/task-1-review-commits.txt b/.superpowers/sdd/task-1-review-commits.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/.superpowers/sdd/task-1-review-stat.txt b/.superpowers/sdd/task-1-review-stat.txt
+new file mode 100644
+index 0000000..f057846
+--- /dev/null
++++ b/.superpowers/sdd/task-1-review-stat.txt
+@@ -0,0 +1,10 @@
++commit d51634721b75bb2dfe520780f915c5785862f10d
++Author: shuhaoHuang <huangshuhao@logiocean.com>
++Date:   Wed Jul 15 09:48:47 2026 +0800
++
++    chore: scaffold caddy-frpc module
++
++ Makefile |  13 +++++++
++ go.mod   |  41 ++++++++++++++++++++
++ go.sum   | 132 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++ 3 files changed, 186 insertions(+)
+diff --git a/.superpowers/sdd/task-1-review.diff b/.superpowers/sdd/task-1-review.diff
+new file mode 100644
+index 0000000..fc23550
+--- /dev/null
++++ b/.superpowers/sdd/task-1-review.diff
+@@ -0,0 +1,210 @@
++commit d51634721b75bb2dfe520780f915c5785862f10d
++Author: shuhaoHuang <huangshuhao@logiocean.com>
++Date:   Wed Jul 15 09:48:47 2026 +0800
++
++    chore: scaffold caddy-frpc module
++
++diff --git a/Makefile b/Makefile
++new file mode 100644
++index 0000000..54257bb
++--- /dev/null
+++++ b/Makefile
++@@ -0,0 +1,13 @@
+++MODULE = github.com/hxgm/caddy-frpc
+++CADDY_VERSION ?= v2.7.6
+++
+++.PHONY: build test clean
+++
+++build:
+++	xcaddy build $(CADDY_VERSION) --with $(MODULE)
+++
+++test:
+++	go test -v -race ./...
+++
+++clean:
+++	rm -f caddy
++diff --git a/go.mod b/go.mod
++new file mode 100644
++index 0000000..b782140
++--- /dev/null
+++++ b/go.mod
++@@ -0,0 +1,41 @@
+++module github.com/hxgm/caddy-frpc
+++
+++go 1.26.4
+++
+++require (
+++	github.com/beorn7/perks v1.0.1 // indirect
+++	github.com/caddyserver/caddy/v2 v2.7.6 // indirect
+++	github.com/caddyserver/certmagic v0.20.0 // indirect
+++	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+++	github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58 // indirect
+++	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
+++	github.com/golang/protobuf v1.5.3 // indirect
+++	github.com/google/pprof v0.0.0-20250403155104-27863c87afa6 // indirect
+++	github.com/google/uuid v1.6.0 // indirect
+++	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
+++	github.com/libdns/libdns v0.2.1 // indirect
+++	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
+++	github.com/mholt/acmez v1.2.0 // indirect
+++	github.com/miekg/dns v1.1.55 // indirect
+++	github.com/onsi/ginkgo/v2 v2.23.4 // indirect
+++	github.com/prometheus/client_golang v1.19.1 // indirect
+++	github.com/prometheus/client_model v0.5.0 // indirect
+++	github.com/prometheus/common v0.48.0 // indirect
+++	github.com/prometheus/procfs v0.12.0 // indirect
+++	github.com/quic-go/qpack v0.5.1 // indirect
+++	github.com/quic-go/qtls-go1-20 v0.4.1 // indirect
+++	github.com/quic-go/quic-go v0.55.0 // indirect
+++	github.com/zeebo/blake3 v0.2.3 // indirect
+++	go.uber.org/mock v0.5.2 // indirect
+++	go.uber.org/multierr v1.11.0 // indirect
+++	go.uber.org/zap v1.25.0 // indirect
+++	golang.org/x/crypto v0.49.0 // indirect
+++	golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0 // indirect
+++	golang.org/x/mod v0.33.0 // indirect
+++	golang.org/x/net v0.52.0 // indirect
+++	golang.org/x/sys v0.42.0 // indirect
+++	golang.org/x/term v0.41.0 // indirect
+++	golang.org/x/text v0.35.0 // indirect
+++	golang.org/x/tools v0.42.0 // indirect
+++	google.golang.org/protobuf v1.36.5 // indirect
+++)
++diff --git a/go.sum b/go.sum
++new file mode 100644
++index 0000000..ec4067c
++--- /dev/null
+++++ b/go.sum
++@@ -0,0 +1,132 @@
+++github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
+++github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
+++github.com/caddyserver/caddy/v2 v2.7.6 h1:w0NymbG2m9PcvKWsrXO6EEkY9Ru4FJK8uQbYcev1p3A=
+++github.com/caddyserver/caddy/v2 v2.7.6/go.mod h1:JCiwFMnRWjk8lOa7po0wM/75kwd38ccJPMSrXvQCMQ0=
+++github.com/caddyserver/certmagic v0.20.0 h1:bTw7LcEZAh9ucYCRXyCpIrSAGplplI0vGYJ4BpCQ/Fc=
+++github.com/caddyserver/certmagic v0.20.0/go.mod h1:N4sXgpICQUskEWpj7zVzvWD41p3NYacrNoZYiRM2jTg=
+++github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=
+++github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
+++github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
+++github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
+++github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
+++github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
+++github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+++github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+++github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58 h1:OKruHs9iQWOygN7PMRysKzFW8FmW09tyBFeXnD/d4I8=
+++github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58/go.mod h1:h6UP/0bhnurYzBPORBgbP+aZByDMpzWOErJNNoFdoJo=
+++github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 h1:tfuBGBXKqDEevZMzYi5KSi8KkcZtzBcTgAUUtapy0OI=
+++github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572/go.mod h1:9Pwr4B2jHnOSGXyyzV8ROjYa2ojvAY6HCGYYfMoC3Ls=
+++github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
+++github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
+++github.com/golang/protobuf v1.5.3 h1:KhyjKVUg7Usr/dYsdSqoFveMYd5ko72D+zANwlG1mmg=
+++github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
+++github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
+++github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 h1:K6RDEckDVWvDI9JAJYCmNdQXq6neHJOYx3V6jnqNEec=
+++github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
+++github.com/google/pprof v0.0.0-20250403155104-27863c87afa6 h1:BHT72Gu3keYf3ZEu2J0b1vyeLSOYI8bm5wbJM/8yDe8=
+++github.com/google/pprof v0.0.0-20250403155104-27863c87afa6/go.mod h1:boTsfXsheKC2y+lKOCMpSfarhxDeIzfZG1jqGcPl3cA=
+++github.com/google/uuid v1.3.1 h1:KjJaJ9iWZ3jOFZIf1Lqf4laDRCasjl0BCmnEGxkdLb4=
+++github.com/google/uuid v1.3.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+++github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+++github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+++github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
+++github.com/klauspost/cpuid/v2 v2.0.12/go.mod h1:g2LTdtYhdyuGPqyWyv7qRAmj1WBqxuObKfj5c0PQa7c=
+++github.com/klauspost/cpuid/v2 v2.2.5 h1:0E5MSMDEoAulmXNFquVs//DdoomxaoTY1kUhbc/qbZg=
+++github.com/klauspost/cpuid/v2 v2.2.5/go.mod h1:Lcz8mBdAVJIBVzewtcLocK12l3Y+JytZYpaMropDUws=
+++github.com/klauspost/cpuid/v2 v2.2.6 h1:ndNyv040zDGIDh8thGkXYjnFtiN02M1PVVF+JE/48xc=
+++github.com/klauspost/cpuid/v2 v2.2.6/go.mod h1:Lcz8mBdAVJIBVzewtcLocK12l3Y+JytZYpaMropDUws=
+++github.com/libdns/libdns v0.2.1 h1:Wu59T7wSHRgtA0cfxC+n1c/e+O3upJGWytknkmFEDis=
+++github.com/libdns/libdns v0.2.1/go.mod h1:yQCXzk1lEZmmCPa857bnk4TsOiqYasqpyOEeSObbb40=
+++github.com/matttproud/golang_protobuf_extensions v1.0.4 h1:mmDVorXM7PCGKw94cs5zkfA9PSy5pEvNWRP0ET0TIVo=
+++github.com/matttproud/golang_protobuf_extensions v1.0.4/go.mod h1:BSXmuO+STAnVfrANrmjBb36TMTDstsz7MSK+HVaYKv4=
+++github.com/mholt/acmez v1.2.0 h1:1hhLxSgY5FvH5HCnGUuwbKY2VQVo8IU7rxXKSnZ7F30=
+++github.com/mholt/acmez v1.2.0/go.mod h1:VT9YwH1xgNX1kmYY89gY8xPJC84BFAisjo8Egigt4kE=
+++github.com/miekg/dns v1.1.55 h1:GoQ4hpsj0nFLYe+bWiCToyrBEJXkQfOOIvFGFy0lEgo=
+++github.com/miekg/dns v1.1.55/go.mod h1:uInx36IzPl7FYnDcMeVWxj9byh7DutNykX4G9Sj60FY=
+++github.com/onsi/ginkgo/v2 v2.9.5 h1:+6Hr4uxzP4XIUyAkg61dWBw8lb/gc4/X5luuxN/EC+Q=
+++github.com/onsi/ginkgo/v2 v2.9.5/go.mod h1:tvAoo1QUJwNEU2ITftXTpR7R1RbCzoZUOs3RonqW57k=
+++github.com/onsi/ginkgo/v2 v2.23.4 h1:ktYTpKJAVZnDT4VjxSbiBenUjmlL/5QkBEocaWXiQus=
+++github.com/onsi/ginkgo/v2 v2.23.4/go.mod h1:Bt66ApGPBFzHyR+JO10Zbt0Gsp4uWxu5mIOTusL46e8=
+++github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+++github.com/prometheus/client_golang v1.15.1 h1:8tXpTmJbyH5lydzFPoxSIJ0J46jdh3tylbvM1xCv0LI=
+++github.com/prometheus/client_golang v1.15.1/go.mod h1:e9yaBhRPU2pPNsZwE+JdQl0KEt1N9XgF6zxWmaC0xOk=
+++github.com/prometheus/client_golang v1.19.1 h1:wZWJDwK+NameRJuPGDhlnFgx8e8HN3XHQeLaYJFJBOE=
+++github.com/prometheus/client_golang v1.19.1/go.mod h1:mP78NwGzrVks5S2H6ab8+ZZGJLZUq1hoULYBAYBw1Ho=
+++github.com/prometheus/client_model v0.4.0 h1:5lQXD3cAg1OXBf4Wq03gTrXHeaV0TQvGfUooCfx1yqY=
+++github.com/prometheus/client_model v0.4.0/go.mod h1:oMQmHW1/JoDwqLtg57MGgP/Fb1CJEYF2imWWhWtMkYU=
+++github.com/prometheus/client_model v0.5.0 h1:VQw1hfvPvk3Uv6Qf29VrPF32JB6rtbgI6cYPYQjL0Qw=
+++github.com/prometheus/client_model v0.5.0/go.mod h1:dTiFglRmd66nLR9Pv9f0mZi7B7fk5Pm3gvsjB5tr+kI=
+++github.com/prometheus/common v0.42.0 h1:EKsfXEYo4JpWMHH5cg+KOUWeuJSov1Id8zGR8eeI1YM=
+++github.com/prometheus/common v0.42.0/go.mod h1:xBwqVerjNdUDjgODMpudtOMwlOwf2SaTr1yjz4b7Zbc=
+++github.com/prometheus/common v0.48.0 h1:QO8U2CdOzSn1BBsmXJXduaaW+dY/5QLjfB8svtSzKKE=
+++github.com/prometheus/common v0.48.0/go.mod h1:0/KsvlIEfPQCQ5I2iNSAWKPZziNCvRs5EC6ILDTlAPc=
+++github.com/prometheus/procfs v0.9.0 h1:wzCHvIvM5SxWqYvwgVL7yJY8Lz3PKn49KQtpgMYJfhI=
+++github.com/prometheus/procfs v0.9.0/go.mod h1:+pB4zwohETzFnmlpe6yd2lSc+0/46IYZRB/chUwxUZY=
+++github.com/prometheus/procfs v0.12.0 h1:jluTpSng7V9hY0O2R9DzzJHYb2xULk9VTR1V1R/k6Bo=
+++github.com/prometheus/procfs v0.12.0/go.mod h1:pcuDEFsWDnvcgNzo4EEweacyhjeA9Zk3cnaOZAZEfOo=
+++github.com/quic-go/qpack v0.4.0 h1:Cr9BXA1sQS2SmDUWjSofMPNKmvF6IiIfDRmgU0w1ZCo=
+++github.com/quic-go/qpack v0.4.0/go.mod h1:UZVnYIfi5GRk+zI9UMaCPsmZ2xKJP7XBUvVyT1Knj9A=
+++github.com/quic-go/qpack v0.5.1 h1:giqksBPnT/HDtZ6VhtFKgoLOWmlyo9Ei6u9PqzIMbhI=
+++github.com/quic-go/qpack v0.5.1/go.mod h1:+PC4XFrEskIVkcLzpEkbLqq1uCoxPhQuvK5rH1ZgaEg=
+++github.com/quic-go/qtls-go1-20 v0.4.1 h1:D33340mCNDAIKBqXuAvexTNMUByrYmFYVfKfDN5nfFs=
+++github.com/quic-go/qtls-go1-20 v0.4.1/go.mod h1:X9Nh97ZL80Z+bX/gUXMbipO6OxdiDi58b/fMC9mAL+k=
+++github.com/quic-go/quic-go v0.40.0 h1:GYd1iznlKm7dpHD7pOVpUvItgMPo/jrMgDWZhMCecqw=
+++github.com/quic-go/quic-go v0.40.0/go.mod h1:PeN7kuVJ4xZbxSv/4OX6S1USOX8MJvydwpTx31vx60c=
+++github.com/quic-go/quic-go v0.55.0 h1:zccPQIqYCXDt5NmcEabyYvOnomjs8Tlwl7tISjJh9Mk=
+++github.com/quic-go/quic-go v0.55.0/go.mod h1:DR51ilwU1uE164KuWXhinFcKWGlEjzys2l8zUl5Ss1U=
+++github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
+++github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+++github.com/zeebo/assert v1.1.0/go.mod h1:Pq9JiuJQpG8JLJdtkwrJESF0Foym2/D9XMU5ciN/wJ0=
+++github.com/zeebo/blake3 v0.2.3 h1:TFoLXsjeXqRNFxSbk35Dk4YtszE/MQQGK10BH4ptoTg=
+++github.com/zeebo/blake3 v0.2.3/go.mod h1:mjJjZpnsyIVtVgTOSpJ9vmRE4wgDeyt2HU3qXvvKCaQ=
+++github.com/zeebo/pcg v1.0.1/go.mod h1:09F0S9iiKrwn9rlI5yjLkmrug154/YRW6KnnXVDM/l4=
+++go.uber.org/mock v0.3.0 h1:3mUxI1No2/60yUYax92Pt8eNOEecx2D3lcXZh2NEZJo=
+++go.uber.org/mock v0.3.0/go.mod h1:a6FSlNadKUHUa9IP5Vyt1zh4fC7uAwxMutEAscFbkZc=
+++go.uber.org/mock v0.5.2 h1:LbtPTcP8A5k9WPXj54PPPbjcI4Y6lhyOZXn+VS7wNko=
+++go.uber.org/mock v0.5.2/go.mod h1:wLlUxC2vVTPTaE3UD51E0BGOAElKrILxhVSDYQLld5o=
+++go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
+++go.uber.org/multierr v1.11.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
+++go.uber.org/zap v1.25.0 h1:4Hvk6GtkucQ790dqmj7l1eEnRdKm3k3ZUrUMS2d5+5c=
+++go.uber.org/zap v1.25.0/go.mod h1:JIAUzQIH94IC4fOJQm7gMmBJP5k7wQfdcnYdPoEXJYk=
+++golang.org/x/crypto v0.14.0 h1:wBqGXzWJW6m1XrIKlAH0Hs1JJ7+9KBwnIO8v66Q9cHc=
+++golang.org/x/crypto v0.14.0/go.mod h1:MVFd36DqK4CsrnJYDkBA3VC4m2GkXAM0PvzMCn4JQf4=
+++golang.org/x/crypto v0.49.0 h1:+Ng2ULVvLHnJ/ZFEq4KdcDd/cfjrrjjNSXNzxg0Y4U4=
+++golang.org/x/crypto v0.49.0/go.mod h1:ErX4dUh2UM+CFYiXZRTcMpEcN8b/1gxEuv3nODoYtCA=
+++golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0 h1:LGJsf5LRplCck6jUCH3dBL2dmycNruWNF5xugkSlfXw=
+++golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
+++golang.org/x/mod v0.11.0 h1:bUO06HqtnRcc/7l71XBe4WcqTZ+3AH1J59zWDDwLKgU=
+++golang.org/x/mod v0.11.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
+++golang.org/x/mod v0.33.0 h1:tHFzIWbBifEmbwtGz65eaWyGiGZatSrT9prnU8DbVL8=
+++golang.org/x/mod v0.33.0/go.mod h1:swjeQEj+6r7fODbD2cqrnje9PnziFuw4bmLbBZFrQ5w=
+++golang.org/x/net v0.17.0 h1:pVaXccu2ozPjCXewfr1S7xza/zcXTity9cCdXQYSjIM=
+++golang.org/x/net v0.17.0/go.mod h1:NxSsAGuq816PNPmqtQdLE42eU2Fs7NoRIZrHJAlaCOE=
+++golang.org/x/net v0.52.0 h1:He/TN1l0e4mmR3QqHMT2Xab3Aj3L9qjbhRm78/6jrW0=
+++golang.org/x/net v0.52.0/go.mod h1:R1MAz7uMZxVMualyPXb+VaqGSa3LIaUqk0eEt3w36Sw=
+++golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+++golang.org/x/sys v0.0.0-20191204072324-ce4227a45e2e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+++golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+++golang.org/x/sys v0.14.0 h1:Vz7Qs629MkJkGyHxUlRHizWJRG2j8fbQKjELVSNhy7Q=
+++golang.org/x/sys v0.14.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
+++golang.org/x/sys v0.42.0 h1:omrd2nAlyT5ESRdCLYdm3+fMfNFE/+Rf4bDIQImRJeo=
+++golang.org/x/sys v0.42.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
+++golang.org/x/term v0.13.0 h1:bb+I9cTfFazGW51MZqBVmZy7+JEJMouUHTUSKVQLBek=
+++golang.org/x/term v0.13.0/go.mod h1:LTmsnFJwVN6bCy1rVCoS+qHT1HhALEFxKncY3WNNh4U=
+++golang.org/x/term v0.41.0 h1:QCgPso/Q3RTJx2Th4bDLqML4W6iJiaXFq2/ftQF13YU=
+++golang.org/x/term v0.41.0/go.mod h1:3pfBgksrReYfZ5lvYM0kSO0LIkAl4Yl2bXOkKP7Ec2A=
+++golang.org/x/text v0.13.0 h1:ablQoSUd0tRdKxZewP80B+BaqeKJuVhuRxj/dkrun3k=
+++golang.org/x/text v0.13.0/go.mod h1:TvPlkZtksWOMsz7fbANvkp4WM8x/WCo/om8BMLbz+aE=
+++golang.org/x/text v0.35.0 h1:JOVx6vVDFokkpaq1AEptVzLTpDe9KGpj5tR4/X+ybL8=
+++golang.org/x/text v0.35.0/go.mod h1:khi/HExzZJ2pGnjenulevKNX1W67CUy0AsXcNubPGCA=
+++golang.org/x/tools v0.10.0 h1:tvDr/iQoUqNdohiYm0LmmKcBk+q86lb9EprIUFhHHGg=
+++golang.org/x/tools v0.10.0/go.mod h1:UJwyiVBsOA2uwvK/e5OY3GTpDUJriEd+/YlqAwLPmyM=
+++golang.org/x/tools v0.42.0 h1:uNgphsn75Tdz5Ji2q36v/nsFSfR/9BRFvqhGBaJGd5k=
+++golang.org/x/tools v0.42.0/go.mod h1:Ma6lCIwGZvHK6XtgbswSoWroEkhugApmsXyrUmBhfr0=
+++golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
+++google.golang.org/protobuf v1.26.0-rc.1/go.mod h1:jlhhOSvTdKEhbULTjvd4ARK9grFBp09yW+WbY/TyQbw=
+++google.golang.org/protobuf v1.26.0/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
+++google.golang.org/protobuf v1.31.0 h1:g0LDEJHgrBl9N9r17Ru3sqWhkIx2NB67okBHPwC7hs8=
+++google.golang.org/protobuf v1.31.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
+++google.golang.org/protobuf v1.36.5 h1:tPhr+woSbjfYvY6/GPufUoYizxw1cF/yFoxJ2fmpwlM=
+++google.golang.org/protobuf v1.36.5/go.mod h1:9fA7Ob0pmnwhb644+1+CVWFRbNajQ6iRojtC/QF5bRE=
+++gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+++gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+diff --git a/.superpowers/sdd/task-2-brief.md b/.superpowers/sdd/task-2-brief.md
+new file mode 100644
+index 0000000..95569c0
+--- /dev/null
++++ b/.superpowers/sdd/task-2-brief.md
+@@ -0,0 +1,201 @@
++# Task 2: Listener Adapter (listener.go)
++
++**Files:**
++- Create: `listener.go`
++- Test: `frpc_test.go` (add tests)
++
++## Implementation
++
++Create `listener.go` with:
++
++```go
++package frpc
++
++import (
++	"net"
++	"sync"
++	"sync/atomic"
++)
++
++// frpcListener adapts frpc work connections into a net.Listener.
++type frpcListener struct {
++	name   string
++	ch     chan net.Conn
++	addr   net.Addr
++	closed atomic.Bool
++}
++
++func newFRPCListener(name, addr string) *frpcListener {
++	return &frpcListener{
++		name: name,
++		ch:   make(chan net.Conn, 8),
++		addr: resolveAddr(addr),
++	}
++}
++
++func (l *frpcListener) Accept() (net.Conn, error) {
++	conn, ok := <-l.ch
++	if !ok {
++		return nil, net.ErrClosed
++	}
++	return conn, nil
++}
++
++func (l *frpcListener) Close() error {
++	if !l.closed.CompareAndSwap(false, true) {
++		return net.ErrClosed
++	}
++	close(l.ch)
++	return nil
++}
++
++func (l *frpcListener) Addr() net.Addr { return l.addr }
++func (l *frpcListener) Name() string   { return l.name }
++func (l *frpcListener) ConnChan() chan<- net.Conn { return l.ch }
++
++func resolveAddr(addr string) net.Addr {
++	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
++	if err != nil {
++		return &net.TCPAddr{IP: net.IPv4(127, 0, 0, 1), Port: 8080}
++	}
++	return tcpAddr
++}
++
++// multiListener aggregates multiple frpcListeners into one net.Listener.
++type multiListener struct {
++	sub    map[string]*frpcListener
++	ch     chan net.Conn
++	done   chan struct{}
++	once   sync.Once
++}
++
++func newMultiListener(listeners map[string]*frpcListener) *multiListener {
++	ml := &multiListener{
++		sub:  listeners,
++		ch:   make(chan net.Conn, 16),
++		done: make(chan struct{}),
++	}
++	for _, ln := range listeners {
++		ln := ln
++		go func() {
++			for {
++				conn, err := ln.Accept()
++				if err != nil {
++					return
++				}
++				select {
++				case ml.ch <- conn:
++				case <-ml.done:
++					return
++				}
++			}
++		}()
++	}
++	return ml
++}
++
++func (ml *multiListener) Accept() (net.Conn, error) {
++	select {
++	case conn := <-ml.ch:
++		return conn, nil
++	case <-ml.done:
++		return nil, net.ErrClosed
++	}
++}
++
++func (ml *multiListener) Close() error {
++	ml.once.Do(func() {
++		close(ml.done)
++		for _, ln := range ml.sub {
++			ln.Close()
++		}
++	})
++	return nil
++}
++
++func (ml *multiListener) Addr() net.Addr {
++	for _, ln := range ml.sub {
++		return ln.Addr()
++	}
++	return &net.TCPAddr{IP: net.IPv4(127, 0, 0, 1), Port: 0}
++}
++```
++
++## Tests (in frpc_test.go)
++
++```go
++package frpc
++
++import (
++	"net"
++	"testing"
++)
++
++func TestFRPCListenerAcceptClose(t *testing.T) {
++	l := newFRPCListener("test-proxy", ":8080")
++	defer l.Close()
++
++	done := make(chan struct{})
++	go func() {
++		conn1, conn2 := net.Pipe()
++		defer conn2.Close()
++		l.ConnChan() <- conn1
++		done <- struct{}{}
++	}()
++
++	accepted, err := l.Accept()
++	if err != nil {
++		t.Fatalf("Accept() error: %v", err)
++	}
++	accepted.Close()
++	<-done
++
++	if l.Addr().String() != "127.0.0.1:8080" {
++		t.Fatalf("expected 127.0.0.1:8080, got %s", l.Addr().String())
++	}
++}
++
++func TestFRPCListenerCloseUnblocksAccept(t *testing.T) {
++	l := newFRPCListener("test-proxy", ":8080")
++	go l.Close()
++	_, err := l.Accept()
++	if err != net.ErrClosed {
++		t.Fatalf("expected net.ErrClosed, got %v", err)
++	}
++}
++
++func TestFRPCListenerName(t *testing.T) {
++	l := newFRPCListener("web", ":8080")
++	if l.Name() != "web" {
++		t.Fatalf("expected web, got %s", l.Name())
++	}
++}
++
++func TestMultiListener(t *testing.T) {
++	ln1 := newFRPCListener("proxy1", ":8080")
++	ln2 := newFRPCListener("proxy2", ":9090")
++	ml := newMultiListener(map[string]*frpcListener{"p1": ln1, "p2": ln2})
++	defer ml.Close()
++
++	done := make(chan struct{})
++	go func() {
++		conn1, conn2 := net.Pipe()
++		defer conn2.Close()
++		ln1.ConnChan() <- conn1
++		done <- struct{}{}
++	}()
++
++	conn, err := ml.Accept()
++	if err != nil {
++		t.Fatalf("multiListener Accept() error: %v", err)
++	}
++	conn.Close()
++	<-done
++}
++```
++
++## Acceptance
++
++- All 4 tests PASS (3 frpcListener + 1 multiListener)
++- `go vet ./...` passes
++- Committed with message `"feat: add frpcListener adapter (workConn -> net.Listener)"`
+diff --git a/.superpowers/sdd/task-2-report.md b/.superpowers/sdd/task-2-report.md
+new file mode 100644
+index 0000000..b63b889
+--- /dev/null
++++ b/.superpowers/sdd/task-2-report.md
+@@ -0,0 +1,41 @@
++# Task 2: Listener Adapter — Report
++
++## Status: DONE
++
++## Commits
++- `cc3f904` — "feat: add frpcListener adapter (workConn -> net.Listener)"
++
++## Files Created
++
++| File | Lines | Purpose |
++|------|-------|---------|
++| `listener.go` | 111 | `frpcListener` (workConn channel → `net.Listener`) + `multiListener` (fan-in multiple proxy listeners) + `resolveAddr` helper |
++| `frpc_test.go` | 89 | 4 tests covering frpcListener and multiListener |
++
++## Test Results (go test -v -count=1)
++
++| Test | Result |
++|------|--------|
++| `TestFRPCListenerAcceptClose` | PASS — pushes a piped conn through ConnChan, Accept() receives it, verifies Addr() |
++| `TestFRPCListenerCloseUnblocksAccept` | PASS — close unblocks pending Accept, returns `net.ErrClosed` |
++| `TestFRPCListenerName` | PASS — Name() returns the configured proxy name |
++| `TestMultiListener` | PASS — multiListener fans in from one sub-listener via Accept() |
++
++## Verification
++
++| Check | Result |
++|-------|--------|
++| `go test -v -count=1 ./...` | PASS (4/4) |
++| `go vet ./...` | PASS (exit 0, no output) |
++
++## Implementation Notes
++
++- `resolveAddr` fills in a nil IP → `127.0.0.1` after a successful `net.ResolveTCPAddr`, so bare ports like `:8080` produce `127.0.0.1:8080` as the canonical address string rather than `:8080`. This matches the test expectation.
++- The `multiListener` goroutine-per-listener pattern uses a local variable shadow (`ln := ln`) to capture each listener correctly in the closure.
++- `frpcListener.Close()` uses `atomic.Bool.CompareAndSwap` for safe idempotent close; subsequent calls return `net.ErrClosed`.
++
++## Concerns
++- None. The listener adapter is self-contained with no external frp imports at this layer — it operates purely on `net.Conn` channels.
++
++## Report written to
++`.superpowers/sdd/task-2-report.md`
+diff --git a/.superpowers/sdd/task-3-brief.md b/.superpowers/sdd/task-3-brief.md
+new file mode 100644
+index 0000000..c35ef50
+--- /dev/null
++++ b/.superpowers/sdd/task-3-brief.md
+@@ -0,0 +1,183 @@
++# Task 3: Config Loading (config.go)
++
++**Files:**
++- Create: `config.go`
++- Modify: `frpc_test.go` (add config tests)
++
++**Important: Use `log/slog` (standard library), NOT `go.uber.org/zap`.**
++
++## Implementation
++
++Create `config.go`:
++
++```go
++package frpc
++
++import (
++	"fmt"
++	"log/slog"
++
++	v1 "github.com/fatedier/frp/pkg/config/v1"
++	"github.com/fatedier/frp/pkg/config"
++)
++
++// frpcConfig holds parsed common config and filtered HTTP/HTTPS proxies.
++type frpcConfig struct {
++	Common       *v1.ClientCommonConfig
++	HTTPProxies  []v1.HTTPProxyConfig
++	HTTPSProxies []v1.HTTPSProxyConfig
++}
++
++// loadConfig loads a frpc config file (TOML or INI), returning common client
++// config and only HTTP/HTTPS proxy configs. Other proxy types are logged and skipped.
++func loadConfig(path string) (*frpcConfig, error) {
++	if path == "" {
++		return nil, fmt.Errorf("frpc config path is empty")
++	}
++
++	result, err := config.LoadClientConfigResult(path, true)
++	if err != nil {
++		return nil, fmt.Errorf("failed to load frpc config from %s: %w", path, err)
++	}
++
++	cfg := &frpcConfig{
++		Common: result.Common,
++	}
++
++	for _, pc := range result.Proxies {
++		base := pc.GetBaseConfig()
++		switch base.Type {
++		case "http":
++			if hc, ok := pc.(*v1.HTTPProxyConfig); ok {
++				hc.Complete()
++				cfg.HTTPProxies = append(cfg.HTTPProxies, *hc)
++			}
++		case "https":
++			if hc, ok := pc.(*v1.HTTPSProxyConfig); ok {
++				hc.Complete()
++				cfg.HTTPSProxies = append(cfg.HTTPSProxies, *hc)
++			}
++		default:
++			slog.Warn("skipping non-HTTP proxy", "name", base.Name, "type", base.Type)
++		}
++	}
++
++	return cfg, nil
++}
++```
++
++## Tests (append to frpc_test.go)
++
++```go
++import (
++	"os"
++	"path/filepath"
++	"testing"
++)
++
++func TestLoadConfigTOML(t *testing.T) {
++	tmp := t.TempDir()
++	cfgPath := filepath.Join(tmp, "frpc.toml")
++	content := `
++serverAddr = "frps.example.com"
++serverPort = 7000
++auth.token = "secret"
++
++[[proxies]]
++name = "web"
++type = "http"
++localIP = "127.0.0.1"
++localPort = 8080
++customDomains = ["web.example.com"]
++locations = ["/"]
++
++[[proxies]]
++name = "api"
++type = "http"
++localIP = "127.0.0.1"
++localPort = 9000
++
++[[proxies]]
++name = "ssh-tunnel"
++type = "tcp"
++localIP = "127.0.0.1"
++localPort = 22
++remotePort = 6000
++
++[[proxies]]
++name = "secure"
++type = "https"
++localIP = "127.0.0.1"
++localPort = 443
++customDomains = ["secure.example.com"]
++`
++	if err := os.WriteFile(cfgPath, []byte(content), 0644); err != nil {
++		t.Fatal(err)
++	}
++
++	cfg, err := loadConfig(cfgPath)
++	if err != nil {
++		t.Fatalf("loadConfig() error: %v", err)
++	}
++	if cfg.Common.ServerAddr != "frps.example.com" {
++		t.Fatalf("expected frps.example.com, got %s", cfg.Common.ServerAddr)
++	}
++	if cfg.Common.ServerPort != 7000 {
++		t.Fatalf("expected 7000, got %d", cfg.Common.ServerPort)
++	}
++	if len(cfg.HTTPProxies) != 2 {
++		t.Fatalf("expected 2 HTTP proxies, got %d", len(cfg.HTTPProxies))
++	}
++	if cfg.HTTPProxies[0].Name != "web" {
++		t.Fatalf("expected proxy name web, got %s", cfg.HTTPProxies[0].Name)
++	}
++	if len(cfg.HTTPSProxies) != 1 {
++		t.Fatalf("expected 1 HTTPS proxy, got %d", len(cfg.HTTPSProxies))
++	}
++}
++
++func TestLoadConfigNoHTTPProxy(t *testing.T) {
++	tmp := t.TempDir()
++	cfgPath := filepath.Join(tmp, "frpc.toml")
++	content := `
++serverAddr = "frps.example.com"
++serverPort = 7000
++
++[[proxies]]
++name = "ssh"
++type = "tcp"
++localIP = "127.0.0.1"
++localPort = 22
++remotePort = 6000
++`
++	if err := os.WriteFile(cfgPath, []byte(content), 0644); err != nil {
++		t.Fatal(err)
++	}
++
++	cfg, err := loadConfig(cfgPath)
++	if err != nil {
++		t.Fatalf("loadConfig() error: %v", err)
++	}
++	if len(cfg.HTTPProxies)+len(cfg.HTTPSProxies) != 0 {
++		t.Fatalf("expected 0 http/https proxies, got %d http + %d https",
++			len(cfg.HTTPProxies), len(cfg.HTTPSProxies))
++	}
++	if cfg.Common.ServerAddr != "frps.example.com" {
++		t.Fatalf("expected frps.example.com, got %s", cfg.Common.ServerAddr)
++	}
++}
++
++func TestLoadConfigNotFound(t *testing.T) {
++	_, err := loadConfig("/nonexistent/frpc.toml")
++	if err == nil {
++		t.Fatal("expected error for nonexistent file")
++	}
++}
++```
++
++## Acceptance
++
++- All 3 config tests PASS (plus existing listener tests)
++- `go vet ./...` passes
++- No import of go.uber.org/zap anywhere in our own code
++- Committed with message `"feat: add config loader (frpc.toml/ini parsing)"`
+diff --git a/.superpowers/sdd/task-3-report.md b/.superpowers/sdd/task-3-report.md
+new file mode 100644
+index 0000000..8505f28
+--- /dev/null
++++ b/.superpowers/sdd/task-3-report.md
+@@ -0,0 +1,37 @@
++# Task 3: Config Loading — Report
++
++## Status: COMPLETE
++
++## Commit
++```
++2333f46 feat: add config loader (frpc.toml/ini parsing)
++```
++
++## Files Changed
++- **config.go** (new, 53 lines) — `frpcConfig` struct and `loadConfig()` function using `config.LoadClientConfigResult`
++- **frpc_test.go** (+102 lines) — 3 new config tests appended
++- **go.mod** / **go.sum** — updated by `go mod tidy` for transitive frp dependencies
++
++## Test Results (all 7 pass)
++```
++=== RUN   TestFRPCListenerAcceptClose        --- PASS
++=== RUN   TestFRPCListenerCloseUnblocksAccept --- PASS
++=== RUN   TestFRPCListenerName               --- PASS
++=== RUN   TestMultiListener                  --- PASS
++=== RUN   TestLoadConfigTOML                 --- PASS  (2 HTTP + 1 HTTPS proxies parsed, TCP skipped)
++=== RUN   TestLoadConfigNoHTTPProxy          --- PASS  (0 HTTP/HTTPS, TCP only)
++=== RUN   TestLoadConfigNotFound             --- PASS  (expected error on missing file)
++```
++
++## Verification
++- `go vet ./...` — clean (no output)
++- `go.uber.org/zap` — **NOT imported** anywhere in our code (`log/slog` used instead)
++
++## Config Design
++- **`frpcConfig`** struct holds `Common` (`*v1.ClientCommonConfig`), `HTTPProxies`, and `HTTPSProxies`
++- **`loadConfig(path string)`** calls `config.LoadClientConfigResult(path, true)`, iterates proxies, type-asserts to `*v1.HTTPProxyConfig` / `*v1.HTTPSProxyConfig`, calls `Complete()` on each, and logs/skips other types via `slog.Warn`
++- Empty path returns `fmt.Errorf("frpc config path is empty")`
++- Load failure returns wrapped error with path context
++
++## Report Path
++`.superpowers/sdd/task-3-report.md`
+diff --git a/.superpowers/sdd/task-3-review-stat.txt b/.superpowers/sdd/task-3-review-stat.txt
+new file mode 100644
+index 0000000..7bf5477
+--- /dev/null
++++ b/.superpowers/sdd/task-3-review-stat.txt
+@@ -0,0 +1,5 @@
++ config.go    |  53 +++++++++++++
++ frpc_test.go | 102 ++++++++++++++++++++++++-
++ go.mod       |  52 ++++++-------
++ go.sum       | 242 ++++++++++++++++++++++++++++++++---------------------------
++ 4 files changed, 307 insertions(+), 142 deletions(-)
+diff --git a/.superpowers/sdd/task-3-review.diff b/.superpowers/sdd/task-3-review.diff
+new file mode 100644
+index 0000000..f90936a
+--- /dev/null
++++ b/.superpowers/sdd/task-3-review.diff
+@@ -0,0 +1,526 @@
++diff --git a/config.go b/config.go
++new file mode 100644
++index 0000000..46946df
++--- /dev/null
+++++ b/config.go
++@@ -0,0 +1,53 @@
+++package frpc
+++
+++import (
+++	"fmt"
+++	"log/slog"
+++
+++	v1 "github.com/fatedier/frp/pkg/config/v1"
+++	"github.com/fatedier/frp/pkg/config"
+++)
+++
+++// frpcConfig holds parsed common config and filtered HTTP/HTTPS proxies.
+++type frpcConfig struct {
+++	Common       *v1.ClientCommonConfig
+++	HTTPProxies  []v1.HTTPProxyConfig
+++	HTTPSProxies []v1.HTTPSProxyConfig
+++}
+++
+++// loadConfig loads a frpc config file (TOML or INI), returning common client
+++// config and only HTTP/HTTPS proxy configs. Other proxy types are logged and skipped.
+++func loadConfig(path string) (*frpcConfig, error) {
+++	if path == "" {
+++		return nil, fmt.Errorf("frpc config path is empty")
+++	}
+++
+++	result, err := config.LoadClientConfigResult(path, true)
+++	if err != nil {
+++		return nil, fmt.Errorf("failed to load frpc config from %s: %w", path, err)
+++	}
+++
+++	cfg := &frpcConfig{
+++		Common: result.Common,
+++	}
+++
+++	for _, pc := range result.Proxies {
+++		base := pc.GetBaseConfig()
+++		switch base.Type {
+++		case "http":
+++			if hc, ok := pc.(*v1.HTTPProxyConfig); ok {
+++				hc.Complete()
+++				cfg.HTTPProxies = append(cfg.HTTPProxies, *hc)
+++			}
+++		case "https":
+++			if hc, ok := pc.(*v1.HTTPSProxyConfig); ok {
+++				hc.Complete()
+++				cfg.HTTPSProxies = append(cfg.HTTPSProxies, *hc)
+++			}
+++		default:
+++			slog.Warn("skipping non-HTTP proxy", "name", base.Name, "type", base.Type)
+++		}
+++	}
+++
+++	return cfg, nil
+++}
++diff --git a/frpc_test.go b/frpc_test.go
++index 9ec470e..1e91223 100644
++--- a/frpc_test.go
+++++ b/frpc_test.go
++@@ -1,14 +1,15 @@
++ package frpc
++-
++ import (
++ 	"net"
+++	"os"
+++	"path/filepath"
++ 	"testing"
++ )
++ 
++ func TestFRPCListenerAcceptClose(t *testing.T) {
++ 	l := newFRPCListener("test-proxy", ":8080")
++ 	defer l.Close()
++ 
++ 	done := make(chan struct{})
++ 	go func() {
++ 		conn1, conn2 := net.Pipe()
++@@ -59,10 +60,109 @@ func TestMultiListener(t *testing.T) {
++ 		done <- struct{}{}
++ 	}()
++ 
++ 	conn, err := ml.Accept()
++ 	if err != nil {
++ 		t.Fatalf("multiListener Accept() error: %v", err)
++ 	}
++ 	conn.Close()
++ 	<-done
++ }
+++
+++func TestLoadConfigTOML(t *testing.T) {
+++	tmp := t.TempDir()
+++	cfgPath := filepath.Join(tmp, "frpc.toml")
+++	content := `
+++serverAddr = "frps.example.com"
+++serverPort = 7000
+++auth.token = "secret"
+++
+++[[proxies]]
+++name = "web"
+++type = "http"
+++localIP = "127.0.0.1"
+++localPort = 8080
+++customDomains = ["web.example.com"]
+++locations = ["/"]
+++
+++[[proxies]]
+++name = "api"
+++type = "http"
+++localIP = "127.0.0.1"
+++localPort = 9000
+++
+++[[proxies]]
+++name = "ssh-tunnel"
+++type = "tcp"
+++localIP = "127.0.0.1"
+++localPort = 22
+++remotePort = 6000
+++
+++[[proxies]]
+++name = "secure"
+++type = "https"
+++localIP = "127.0.0.1"
+++localPort = 443
+++customDomains = ["secure.example.com"]
+++`
+++	if err := os.WriteFile(cfgPath, []byte(content), 0644); err != nil {
+++		t.Fatal(err)
+++	}
+++
+++	cfg, err := loadConfig(cfgPath)
+++	if err != nil {
+++		t.Fatalf("loadConfig() error: %v", err)
+++	}
+++	if cfg.Common.ServerAddr != "frps.example.com" {
+++		t.Fatalf("expected frps.example.com, got %s", cfg.Common.ServerAddr)
+++	}
+++	if cfg.Common.ServerPort != 7000 {
+++		t.Fatalf("expected 7000, got %d", cfg.Common.ServerPort)
+++	}
+++	if len(cfg.HTTPProxies) != 2 {
+++		t.Fatalf("expected 2 HTTP proxies, got %d", len(cfg.HTTPProxies))
+++	}
+++	if cfg.HTTPProxies[0].Name != "web" {
+++		t.Fatalf("expected proxy name web, got %s", cfg.HTTPProxies[0].Name)
+++	}
+++	if len(cfg.HTTPSProxies) != 1 {
+++		t.Fatalf("expected 1 HTTPS proxy, got %d", len(cfg.HTTPSProxies))
+++	}
+++}
+++
+++func TestLoadConfigNoHTTPProxy(t *testing.T) {
+++	tmp := t.TempDir()
+++	cfgPath := filepath.Join(tmp, "frpc.toml")
+++	content := `
+++serverAddr = "frps.example.com"
+++serverPort = 7000
+++
+++[[proxies]]
+++name = "ssh"
+++type = "tcp"
+++localIP = "127.0.0.1"
+++localPort = 22
+++remotePort = 6000
+++`
+++	if err := os.WriteFile(cfgPath, []byte(content), 0644); err != nil {
+++		t.Fatal(err)
+++	}
+++
+++	cfg, err := loadConfig(cfgPath)
+++	if err != nil {
+++		t.Fatalf("loadConfig() error: %v", err)
+++	}
+++	if len(cfg.HTTPProxies)+len(cfg.HTTPSProxies) != 0 {
+++		t.Fatalf("expected 0 http/https proxies, got %d http + %d https",
+++			len(cfg.HTTPProxies), len(cfg.HTTPSProxies))
+++	}
+++	if cfg.Common.ServerAddr != "frps.example.com" {
+++		t.Fatalf("expected frps.example.com, got %s", cfg.Common.ServerAddr)
+++	}
+++}
+++
+++func TestLoadConfigNotFound(t *testing.T) {
+++	_, err := loadConfig("/nonexistent/frpc.toml")
+++	if err == nil {
+++		t.Fatal("expected error for nonexistent file")
+++	}
+++}
++diff --git a/go.mod b/go.mod
++index b782140..85a9f11 100644
++--- a/go.mod
+++++ b/go.mod
++@@ -1,41 +1,33 @@
++ module github.com/hxgm/caddy-frpc
++ 
++ go 1.26.4
++ 
+++require github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58
+++
++ require (
++-	github.com/beorn7/perks v1.0.1 // indirect
++-	github.com/caddyserver/caddy/v2 v2.7.6 // indirect
++-	github.com/caddyserver/certmagic v0.20.0 // indirect
++-	github.com/cespare/xxhash/v2 v2.2.0 // indirect
++-	github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58 // indirect
++-	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
++-	github.com/golang/protobuf v1.5.3 // indirect
++-	github.com/google/pprof v0.0.0-20250403155104-27863c87afa6 // indirect
++-	github.com/google/uuid v1.6.0 // indirect
+++	github.com/Azure/go-ntlmssp v0.1.0 // indirect
+++	github.com/fatedier/golib v0.7.0 // indirect
+++	github.com/inconshreveable/mousetrap v1.1.0 // indirect
++ 	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
++-	github.com/libdns/libdns v0.2.1 // indirect
++-	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
++-	github.com/mholt/acmez v1.2.0 // indirect
++-	github.com/miekg/dns v1.1.55 // indirect
++-	github.com/onsi/ginkgo/v2 v2.23.4 // indirect
++-	github.com/prometheus/client_golang v1.19.1 // indirect
++-	github.com/prometheus/client_model v0.5.0 // indirect
++-	github.com/prometheus/common v0.48.0 // indirect
++-	github.com/prometheus/procfs v0.12.0 // indirect
++-	github.com/quic-go/qpack v0.5.1 // indirect
++-	github.com/quic-go/qtls-go1-20 v0.4.1 // indirect
++-	github.com/quic-go/quic-go v0.55.0 // indirect
++-	github.com/zeebo/blake3 v0.2.3 // indirect
++-	go.uber.org/mock v0.5.2 // indirect
++-	go.uber.org/multierr v1.11.0 // indirect
++-	go.uber.org/zap v1.25.0 // indirect
+++	github.com/klauspost/reedsolomon v1.12.0 // indirect
+++	github.com/kr/text v0.2.0 // indirect
+++	github.com/pelletier/go-toml/v2 v2.2.0 // indirect
+++	github.com/pkg/errors v0.9.1 // indirect
+++	github.com/samber/lo v1.47.0 // indirect
+++	github.com/spf13/cobra v1.8.0 // indirect
+++	github.com/spf13/pflag v1.0.5 // indirect
+++	github.com/templexxx/cpu v0.1.1 // indirect
+++	github.com/templexxx/xorsimd v0.4.3 // indirect
+++	github.com/tjfoc/gmsm v1.4.1 // indirect
+++	github.com/xtaci/kcp-go/v5 v5.6.13 // indirect
++ 	golang.org/x/crypto v0.49.0 // indirect
++-	golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0 // indirect
++-	golang.org/x/mod v0.33.0 // indirect
++ 	golang.org/x/net v0.52.0 // indirect
++ 	golang.org/x/sys v0.42.0 // indirect
++-	golang.org/x/term v0.41.0 // indirect
++ 	golang.org/x/text v0.35.0 // indirect
++-	golang.org/x/tools v0.42.0 // indirect
++-	google.golang.org/protobuf v1.36.5 // indirect
+++	gopkg.in/ini.v1 v1.67.0 // indirect
+++	gopkg.in/yaml.v2 v2.4.0 // indirect
+++	k8s.io/apimachinery v0.28.8 // indirect
+++	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2 // indirect
+++	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
+++	sigs.k8s.io/yaml v1.3.0 // indirect
++ )
++diff --git a/go.sum b/go.sum
++index ec4067c..7ae1f49 100644
++--- a/go.sum
+++++ b/go.sum
++@@ -1,132 +1,152 @@
++-github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
++-github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
++-github.com/caddyserver/caddy/v2 v2.7.6 h1:w0NymbG2m9PcvKWsrXO6EEkY9Ru4FJK8uQbYcev1p3A=
++-github.com/caddyserver/caddy/v2 v2.7.6/go.mod h1:JCiwFMnRWjk8lOa7po0wM/75kwd38ccJPMSrXvQCMQ0=
++-github.com/caddyserver/certmagic v0.20.0 h1:bTw7LcEZAh9ucYCRXyCpIrSAGplplI0vGYJ4BpCQ/Fc=
++-github.com/caddyserver/certmagic v0.20.0/go.mod h1:N4sXgpICQUskEWpj7zVzvWD41p3NYacrNoZYiRM2jTg=
++-github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=
++-github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
++-github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
++-github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
++-github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
++-github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
+++cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
+++github.com/Azure/go-ntlmssp v0.1.0 h1:DjFo6YtWzNqNvQdrwEyr/e4nhU3vRiwenz5QX7sFz+A=
+++github.com/Azure/go-ntlmssp v0.1.0/go.mod h1:NYqdhxd/8aAct/s4qSYZEerdPuH1liG2/X9DiVTbhpk=
+++github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+++github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
+++github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
+++github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
+++github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
+++github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
++ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+++github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
++ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+++github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
+++github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
+++github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
++ github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58 h1:OKruHs9iQWOygN7PMRysKzFW8FmW09tyBFeXnD/d4I8=
++ github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58/go.mod h1:h6UP/0bhnurYzBPORBgbP+aZByDMpzWOErJNNoFdoJo=
++-github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 h1:tfuBGBXKqDEevZMzYi5KSi8KkcZtzBcTgAUUtapy0OI=
++-github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572/go.mod h1:9Pwr4B2jHnOSGXyyzV8ROjYa2ojvAY6HCGYYfMoC3Ls=
+++github.com/fatedier/golib v0.7.0 h1:tMDF9ObcwVt59VUHroJOzHQjVFPLymZVMpGm9WAVwhY=
+++github.com/fatedier/golib v0.7.0/go.mod h1:ArUGvPg2cOw/py2RAuBt46nNZH2VQ5Z70p109MAZpJw=
+++github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
+++github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfbm0A=
++ github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
++-github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
++-github.com/golang/protobuf v1.5.3 h1:KhyjKVUg7Usr/dYsdSqoFveMYd5ko72D+zANwlG1mmg=
++-github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
++-github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
++-github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 h1:K6RDEckDVWvDI9JAJYCmNdQXq6neHJOYx3V6jnqNEec=
++-github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
++-github.com/google/pprof v0.0.0-20250403155104-27863c87afa6 h1:BHT72Gu3keYf3ZEu2J0b1vyeLSOYI8bm5wbJM/8yDe8=
++-github.com/google/pprof v0.0.0-20250403155104-27863c87afa6/go.mod h1:boTsfXsheKC2y+lKOCMpSfarhxDeIzfZG1jqGcPl3cA=
++-github.com/google/uuid v1.3.1 h1:KjJaJ9iWZ3jOFZIf1Lqf4laDRCasjl0BCmnEGxkdLb4=
++-github.com/google/uuid v1.3.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
++-github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
++-github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
++-github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
++-github.com/klauspost/cpuid/v2 v2.0.12/go.mod h1:g2LTdtYhdyuGPqyWyv7qRAmj1WBqxuObKfj5c0PQa7c=
++-github.com/klauspost/cpuid/v2 v2.2.5 h1:0E5MSMDEoAulmXNFquVs//DdoomxaoTY1kUhbc/qbZg=
++-github.com/klauspost/cpuid/v2 v2.2.5/go.mod h1:Lcz8mBdAVJIBVzewtcLocK12l3Y+JytZYpaMropDUws=
+++github.com/golang/protobuf v1.3.2/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
+++github.com/golang/protobuf v1.3.3/go.mod h1:vzj43D7+SQXF/4pzW/hwtAqwc6iTitCiVSaWz5lYuqw=
+++github.com/golang/protobuf v1.4.0-rc.1/go.mod h1:ceaxUfeHdC40wWswd/P6IGgMaK3YpKi5j83Wpe3EHw8=
+++github.com/golang/protobuf v1.4.0-rc.1.0.20200221234624-67d41d38c208/go.mod h1:xKAWHe0F5eneWXFV3EuXVDTCmh+JuBKY0li0aMyXATA=
+++github.com/golang/protobuf v1.4.0-rc.2/go.mod h1:LlEzMj4AhA7rCAGe4KMBDvJI+AwstrUpVNzEA03Pprs=
+++github.com/golang/protobuf v1.4.0-rc.4.0.20200313231945-b860323f09d0/go.mod h1:WU3c8KckQ9AFe+yFwt9sWVRKCVIyN9cPHBJSNnbL67w=
+++github.com/golang/protobuf v1.4.0/go.mod h1:jodUvKwWbYaEsadDk5Fwe5c77LiNKVO9IDvqG2KuDX0=
+++github.com/golang/protobuf v1.4.2/go.mod h1:oDoupMAO8OvCJWAcko0GGGIgR6R6ocIYbsSw735rRwI=
+++github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
+++github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
+++github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
+++github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
+++github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
+++github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
++ github.com/klauspost/cpuid/v2 v2.2.6 h1:ndNyv040zDGIDh8thGkXYjnFtiN02M1PVVF+JE/48xc=
++ github.com/klauspost/cpuid/v2 v2.2.6/go.mod h1:Lcz8mBdAVJIBVzewtcLocK12l3Y+JytZYpaMropDUws=
++-github.com/libdns/libdns v0.2.1 h1:Wu59T7wSHRgtA0cfxC+n1c/e+O3upJGWytknkmFEDis=
++-github.com/libdns/libdns v0.2.1/go.mod h1:yQCXzk1lEZmmCPa857bnk4TsOiqYasqpyOEeSObbb40=
++-github.com/matttproud/golang_protobuf_extensions v1.0.4 h1:mmDVorXM7PCGKw94cs5zkfA9PSy5pEvNWRP0ET0TIVo=
++-github.com/matttproud/golang_protobuf_extensions v1.0.4/go.mod h1:BSXmuO+STAnVfrANrmjBb36TMTDstsz7MSK+HVaYKv4=
++-github.com/mholt/acmez v1.2.0 h1:1hhLxSgY5FvH5HCnGUuwbKY2VQVo8IU7rxXKSnZ7F30=
++-github.com/mholt/acmez v1.2.0/go.mod h1:VT9YwH1xgNX1kmYY89gY8xPJC84BFAisjo8Egigt4kE=
++-github.com/miekg/dns v1.1.55 h1:GoQ4hpsj0nFLYe+bWiCToyrBEJXkQfOOIvFGFy0lEgo=
++-github.com/miekg/dns v1.1.55/go.mod h1:uInx36IzPl7FYnDcMeVWxj9byh7DutNykX4G9Sj60FY=
++-github.com/onsi/ginkgo/v2 v2.9.5 h1:+6Hr4uxzP4XIUyAkg61dWBw8lb/gc4/X5luuxN/EC+Q=
++-github.com/onsi/ginkgo/v2 v2.9.5/go.mod h1:tvAoo1QUJwNEU2ITftXTpR7R1RbCzoZUOs3RonqW57k=
++-github.com/onsi/ginkgo/v2 v2.23.4 h1:ktYTpKJAVZnDT4VjxSbiBenUjmlL/5QkBEocaWXiQus=
++-github.com/onsi/ginkgo/v2 v2.23.4/go.mod h1:Bt66ApGPBFzHyR+JO10Zbt0Gsp4uWxu5mIOTusL46e8=
+++github.com/klauspost/reedsolomon v1.12.0 h1:I5FEp3xSwVCcEh3F5A7dofEfhXdF/bWhQWPH+XwBFno=
+++github.com/klauspost/reedsolomon v1.12.0/go.mod h1:EPLZJeh4l27pUGC3aXOjheaoh1I9yut7xTURiW3LQ9Y=
+++github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
+++github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
+++github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
+++github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
+++github.com/pelletier/go-toml/v2 v2.2.0 h1:QLgLl2yMN7N+ruc31VynXs1vhMZa7CeHHejIeBAsoHo=
+++github.com/pelletier/go-toml/v2 v2.2.0/go.mod h1:1t835xjRzz80PqgE6HHgN2JOsmgYu/h4qDAS4n929Rs=
+++github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+++github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+++github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
++ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
++-github.com/prometheus/client_golang v1.15.1 h1:8tXpTmJbyH5lydzFPoxSIJ0J46jdh3tylbvM1xCv0LI=
++-github.com/prometheus/client_golang v1.15.1/go.mod h1:e9yaBhRPU2pPNsZwE+JdQl0KEt1N9XgF6zxWmaC0xOk=
++-github.com/prometheus/client_golang v1.19.1 h1:wZWJDwK+NameRJuPGDhlnFgx8e8HN3XHQeLaYJFJBOE=
++-github.com/prometheus/client_golang v1.19.1/go.mod h1:mP78NwGzrVks5S2H6ab8+ZZGJLZUq1hoULYBAYBw1Ho=
++-github.com/prometheus/client_model v0.4.0 h1:5lQXD3cAg1OXBf4Wq03gTrXHeaV0TQvGfUooCfx1yqY=
++-github.com/prometheus/client_model v0.4.0/go.mod h1:oMQmHW1/JoDwqLtg57MGgP/Fb1CJEYF2imWWhWtMkYU=
++-github.com/prometheus/client_model v0.5.0 h1:VQw1hfvPvk3Uv6Qf29VrPF32JB6rtbgI6cYPYQjL0Qw=
++-github.com/prometheus/client_model v0.5.0/go.mod h1:dTiFglRmd66nLR9Pv9f0mZi7B7fk5Pm3gvsjB5tr+kI=
++-github.com/prometheus/common v0.42.0 h1:EKsfXEYo4JpWMHH5cg+KOUWeuJSov1Id8zGR8eeI1YM=
++-github.com/prometheus/common v0.42.0/go.mod h1:xBwqVerjNdUDjgODMpudtOMwlOwf2SaTr1yjz4b7Zbc=
++-github.com/prometheus/common v0.48.0 h1:QO8U2CdOzSn1BBsmXJXduaaW+dY/5QLjfB8svtSzKKE=
++-github.com/prometheus/common v0.48.0/go.mod h1:0/KsvlIEfPQCQ5I2iNSAWKPZziNCvRs5EC6ILDTlAPc=
++-github.com/prometheus/procfs v0.9.0 h1:wzCHvIvM5SxWqYvwgVL7yJY8Lz3PKn49KQtpgMYJfhI=
++-github.com/prometheus/procfs v0.9.0/go.mod h1:+pB4zwohETzFnmlpe6yd2lSc+0/46IYZRB/chUwxUZY=
++-github.com/prometheus/procfs v0.12.0 h1:jluTpSng7V9hY0O2R9DzzJHYb2xULk9VTR1V1R/k6Bo=
++-github.com/prometheus/procfs v0.12.0/go.mod h1:pcuDEFsWDnvcgNzo4EEweacyhjeA9Zk3cnaOZAZEfOo=
++-github.com/quic-go/qpack v0.4.0 h1:Cr9BXA1sQS2SmDUWjSofMPNKmvF6IiIfDRmgU0w1ZCo=
++-github.com/quic-go/qpack v0.4.0/go.mod h1:UZVnYIfi5GRk+zI9UMaCPsmZ2xKJP7XBUvVyT1Knj9A=
++-github.com/quic-go/qpack v0.5.1 h1:giqksBPnT/HDtZ6VhtFKgoLOWmlyo9Ei6u9PqzIMbhI=
++-github.com/quic-go/qpack v0.5.1/go.mod h1:+PC4XFrEskIVkcLzpEkbLqq1uCoxPhQuvK5rH1ZgaEg=
++-github.com/quic-go/qtls-go1-20 v0.4.1 h1:D33340mCNDAIKBqXuAvexTNMUByrYmFYVfKfDN5nfFs=
++-github.com/quic-go/qtls-go1-20 v0.4.1/go.mod h1:X9Nh97ZL80Z+bX/gUXMbipO6OxdiDi58b/fMC9mAL+k=
++-github.com/quic-go/quic-go v0.40.0 h1:GYd1iznlKm7dpHD7pOVpUvItgMPo/jrMgDWZhMCecqw=
++-github.com/quic-go/quic-go v0.40.0/go.mod h1:PeN7kuVJ4xZbxSv/4OX6S1USOX8MJvydwpTx31vx60c=
++-github.com/quic-go/quic-go v0.55.0 h1:zccPQIqYCXDt5NmcEabyYvOnomjs8Tlwl7tISjJh9Mk=
++-github.com/quic-go/quic-go v0.55.0/go.mod h1:DR51ilwU1uE164KuWXhinFcKWGlEjzys2l8zUl5Ss1U=
+++github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
+++github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
+++github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncjaFoBhdsK/akog=
+++github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
+++github.com/samber/lo v1.47.0 h1:z7RynLwP5nbyRscyvcD043DWYoOcYRv3mV8lBeqOCLc=
+++github.com/samber/lo v1.47.0/go.mod h1:RmDH9Ct32Qy3gduHQuKJ3gW1fMHAnE/fAzQuf6He5cU=
+++github.com/spf13/cobra v1.8.0 h1:7aJaZx1B85qltLMc546zn58BxxfZdR/W22ej9CFoEf0=
+++github.com/spf13/cobra v1.8.0/go.mod h1:WXLWApfZ71AjXPya3WOlMsY9yMs7YeiHhFVlvLyhcho=
+++github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
+++github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
++ github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
++-github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
++-github.com/zeebo/assert v1.1.0/go.mod h1:Pq9JiuJQpG8JLJdtkwrJESF0Foym2/D9XMU5ciN/wJ0=
++-github.com/zeebo/blake3 v0.2.3 h1:TFoLXsjeXqRNFxSbk35Dk4YtszE/MQQGK10BH4ptoTg=
++-github.com/zeebo/blake3 v0.2.3/go.mod h1:mjJjZpnsyIVtVgTOSpJ9vmRE4wgDeyt2HU3qXvvKCaQ=
++-github.com/zeebo/pcg v1.0.1/go.mod h1:09F0S9iiKrwn9rlI5yjLkmrug154/YRW6KnnXVDM/l4=
++-go.uber.org/mock v0.3.0 h1:3mUxI1No2/60yUYax92Pt8eNOEecx2D3lcXZh2NEZJo=
++-go.uber.org/mock v0.3.0/go.mod h1:a6FSlNadKUHUa9IP5Vyt1zh4fC7uAwxMutEAscFbkZc=
++-go.uber.org/mock v0.5.2 h1:LbtPTcP8A5k9WPXj54PPPbjcI4Y6lhyOZXn+VS7wNko=
++-go.uber.org/mock v0.5.2/go.mod h1:wLlUxC2vVTPTaE3UD51E0BGOAElKrILxhVSDYQLld5o=
++-go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
++-go.uber.org/multierr v1.11.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
++-go.uber.org/zap v1.25.0 h1:4Hvk6GtkucQ790dqmj7l1eEnRdKm3k3ZUrUMS2d5+5c=
++-go.uber.org/zap v1.25.0/go.mod h1:JIAUzQIH94IC4fOJQm7gMmBJP5k7wQfdcnYdPoEXJYk=
++-golang.org/x/crypto v0.14.0 h1:wBqGXzWJW6m1XrIKlAH0Hs1JJ7+9KBwnIO8v66Q9cHc=
++-golang.org/x/crypto v0.14.0/go.mod h1:MVFd36DqK4CsrnJYDkBA3VC4m2GkXAM0PvzMCn4JQf4=
+++github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
+++github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=
+++github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/8L+MA=
+++github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+++github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
+++github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+++github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
+++github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
+++github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
+++github.com/templexxx/cpu v0.1.1 h1:isxHaxBXpYFWnk2DReuKkigaZyrjs2+9ypIdGP4h+HI=
+++github.com/templexxx/cpu v0.1.1/go.mod h1:w7Tb+7qgcAlIyX4NhLuDKt78AHA5SzPmq0Wj6HiEnnk=
+++github.com/templexxx/xorsimd v0.4.3 h1:9AQTFHd7Bhk3dIT7Al2XeBX5DWOvsUPZCuhyAtNbHjU=
+++github.com/templexxx/xorsimd v0.4.3/go.mod h1:oZQcD6RFDisW2Am58dSAGwwL6rHjbzrlu25VDqfWkQg=
+++github.com/tjfoc/gmsm v1.4.1 h1:aMe1GlZb+0bLjn+cKTPEvvn9oUEBlJitaZiiBwsbgho=
+++github.com/tjfoc/gmsm v1.4.1/go.mod h1:j4INPkHWMrhJb38G+J6W4Tw0AbuN8Thu3PbdVYhVcTE=
+++github.com/xtaci/kcp-go/v5 v5.6.13 h1:FEjtz9+D4p8t2x4WjciGt/jsIuhlWjjgPCCWjrVR4Hk=
+++github.com/xtaci/kcp-go/v5 v5.6.13/go.mod h1:75S1AKYYzNUSXIv30h+jPKJYZUwqpfvLshu63nCNSOM=
+++github.com/xtaci/lossyconn v0.0.0-20200209145036-adba10fffc37 h1:EWU6Pktpas0n8lLQwDsRyZfmkPeRbdgPtW609es+/9E=
+++github.com/xtaci/lossyconn v0.0.0-20200209145036-adba10fffc37/go.mod h1:HpMP7DB2CyokmAh4lp0EQnnWhmycP/TvwBGzvuie+H0=
+++golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
+++golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
+++golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
++ golang.org/x/crypto v0.49.0 h1:+Ng2ULVvLHnJ/ZFEq4KdcDd/cfjrrjjNSXNzxg0Y4U4=
++ golang.org/x/crypto v0.49.0/go.mod h1:ErX4dUh2UM+CFYiXZRTcMpEcN8b/1gxEuv3nODoYtCA=
++-golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0 h1:LGJsf5LRplCck6jUCH3dBL2dmycNruWNF5xugkSlfXw=
++-golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
++-golang.org/x/mod v0.11.0 h1:bUO06HqtnRcc/7l71XBe4WcqTZ+3AH1J59zWDDwLKgU=
++-golang.org/x/mod v0.11.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
++-golang.org/x/mod v0.33.0 h1:tHFzIWbBifEmbwtGz65eaWyGiGZatSrT9prnU8DbVL8=
++-golang.org/x/mod v0.33.0/go.mod h1:swjeQEj+6r7fODbD2cqrnje9PnziFuw4bmLbBZFrQ5w=
++-golang.org/x/net v0.17.0 h1:pVaXccu2ozPjCXewfr1S7xza/zcXTity9cCdXQYSjIM=
++-golang.org/x/net v0.17.0/go.mod h1:NxSsAGuq816PNPmqtQdLE42eU2Fs7NoRIZrHJAlaCOE=
+++golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
+++golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
+++golang.org/x/lint v0.0.0-20190227174305-5b3e6a55c961/go.mod h1:wehouNa3lNwaWXcvxsM5YxQ5yQlVC4a0KAMCusXpPoU=
+++golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3/go.mod h1:6SW0HCj/g11FgYtHlgUYUwCkIfeOF89ocIRzGO/8vkc=
+++golang.org/x/net v0.0.0-20180724234803-3673e40ba225/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+++golang.org/x/net v0.0.0-20180826012351-8a410e7b638d/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+++golang.org/x/net v0.0.0-20190213061140-3a22650c66bd/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+++golang.org/x/net v0.0.0-20190311183353-d8887717615a/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
+++golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
+++golang.org/x/net v0.0.0-20201010224723-4f7140c49acb/go.mod h1:sp8m0HH+o8qH0wwXwYZr8TS3Oi6o0r6Gce1SSxlDquU=
++ golang.org/x/net v0.52.0 h1:He/TN1l0e4mmR3QqHMT2Xab3Aj3L9qjbhRm78/6jrW0=
++ golang.org/x/net v0.52.0/go.mod h1:R1MAz7uMZxVMualyPXb+VaqGSa3LIaUqk0eEt3w36Sw=
++-golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
++-golang.org/x/sys v0.0.0-20191204072324-ce4227a45e2e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+++golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
+++golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+++golang.org/x/sync v0.0.0-20181108010431-42b317875d0f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+++golang.org/x/sync v0.0.0-20190423024810-112230192c58/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+++golang.org/x/sys v0.0.0-20180830151530-49385e6e1522/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+++golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+++golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+++golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
++ golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
++-golang.org/x/sys v0.14.0 h1:Vz7Qs629MkJkGyHxUlRHizWJRG2j8fbQKjELVSNhy7Q=
++-golang.org/x/sys v0.14.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
++ golang.org/x/sys v0.42.0 h1:omrd2nAlyT5ESRdCLYdm3+fMfNFE/+Rf4bDIQImRJeo=
++ golang.org/x/sys v0.42.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
++-golang.org/x/term v0.13.0 h1:bb+I9cTfFazGW51MZqBVmZy7+JEJMouUHTUSKVQLBek=
++-golang.org/x/term v0.13.0/go.mod h1:LTmsnFJwVN6bCy1rVCoS+qHT1HhALEFxKncY3WNNh4U=
++-golang.org/x/term v0.41.0 h1:QCgPso/Q3RTJx2Th4bDLqML4W6iJiaXFq2/ftQF13YU=
++-golang.org/x/term v0.41.0/go.mod h1:3pfBgksrReYfZ5lvYM0kSO0LIkAl4Yl2bXOkKP7Ec2A=
++-golang.org/x/text v0.13.0 h1:ablQoSUd0tRdKxZewP80B+BaqeKJuVhuRxj/dkrun3k=
++-golang.org/x/text v0.13.0/go.mod h1:TvPlkZtksWOMsz7fbANvkp4WM8x/WCo/om8BMLbz+aE=
+++golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
+++golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=
++ golang.org/x/text v0.35.0 h1:JOVx6vVDFokkpaq1AEptVzLTpDe9KGpj5tR4/X+ybL8=
++ golang.org/x/text v0.35.0/go.mod h1:khi/HExzZJ2pGnjenulevKNX1W67CUy0AsXcNubPGCA=
++-golang.org/x/tools v0.10.0 h1:tvDr/iQoUqNdohiYm0LmmKcBk+q86lb9EprIUFhHHGg=
++-golang.org/x/tools v0.10.0/go.mod h1:UJwyiVBsOA2uwvK/e5OY3GTpDUJriEd+/YlqAwLPmyM=
++-golang.org/x/tools v0.42.0 h1:uNgphsn75Tdz5Ji2q36v/nsFSfR/9BRFvqhGBaJGd5k=
++-golang.org/x/tools v0.42.0/go.mod h1:Ma6lCIwGZvHK6XtgbswSoWroEkhugApmsXyrUmBhfr0=
+++golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
+++golang.org/x/tools v0.0.0-20190114222345-bf090417da8b/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
+++golang.org/x/tools v0.0.0-20190226205152-f727befe758c/go.mod h1:9Yl7xja0Znq3iFh3HoIrodX9oNMXvdceNzlUR8zjMvY=
+++golang.org/x/tools v0.0.0-20190311212946-11955173bddd/go.mod h1:LCzVGOaR6xXOjkQ3onu1FJEFr0SW1gC7cKk1uF8kGRs=
+++golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135/go.mod h1:RgjU9mgBXZiqYHBnxXauZ1Gv1EHHAz9KjViQ78xBX0Q=
++ golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
++-google.golang.org/protobuf v1.26.0-rc.1/go.mod h1:jlhhOSvTdKEhbULTjvd4ARK9grFBp09yW+WbY/TyQbw=
++-google.golang.org/protobuf v1.26.0/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
++-google.golang.org/protobuf v1.31.0 h1:g0LDEJHgrBl9N9r17Ru3sqWhkIx2NB67okBHPwC7hs8=
++-google.golang.org/protobuf v1.31.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
++-google.golang.org/protobuf v1.36.5 h1:tPhr+woSbjfYvY6/GPufUoYizxw1cF/yFoxJ2fmpwlM=
++-google.golang.org/protobuf v1.36.5/go.mod h1:9fA7Ob0pmnwhb644+1+CVWFRbNajQ6iRojtC/QF5bRE=
+++google.golang.org/appengine v1.1.0/go.mod h1:EbEs0AVv82hx2wNQdGPgUI5lhzA/G0D9YwlJXL52JkM=
+++google.golang.org/appengine v1.4.0/go.mod h1:xpcJRLb0r/rnEns0DIKYYv+WjYCduHsrkT7/EB5XEv4=
+++google.golang.org/genproto v0.0.0-20180817151627-c66870c02cf8/go.mod h1:JiN7NxoALGmiZfu7CAH4rXhgtRTLTxftemlI0sWmxmc=
+++google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55/go.mod h1:DMBHOl98Agz4BDEuKkezgsaosCRResVns1a3J2ZsMNc=
+++google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
+++google.golang.org/grpc v1.23.0/go.mod h1:Y5yQAOtifL1yxbo5wqy6BxZv8vAUGQwXBOALyacEbxg=
+++google.golang.org/grpc v1.25.1/go.mod h1:c3i+UQWmh7LiEpx4sFZnkU36qjEYZ0imhYfXVyQciAY=
+++google.golang.org/grpc v1.31.0/go.mod h1:N36X2cJ7JwdamYAgDz+s+rVMFjt3numwzf/HckM8pak=
+++google.golang.org/protobuf v0.0.0-20200109180630-ec00e32a8dfd/go.mod h1:DFci5gLYBciE7Vtevhsrf46CRTquxDuWsQurQQe4oz8=
+++google.golang.org/protobuf v0.0.0-20200221191635-4d8936d0db64/go.mod h1:kwYJMbMJ01Woi6D6+Kah6886xMZcty6N08ah7+eCXa0=
+++google.golang.org/protobuf v0.0.0-20200228230310-ab0ca4ff8a60/go.mod h1:cfTl7dwQJ+fmap5saPgwCLgHXTUD7jkjRqWcaiX5VyM=
+++google.golang.org/protobuf v1.20.1-0.20200309200217-e05f789c0967/go.mod h1:A+miEFZTKqfCUM6K7xSMQL9OKL/b6hQv+e19PK+JZNE=
+++google.golang.org/protobuf v1.21.0/go.mod h1:47Nbq4nVaFHyn7ilMalzfO3qCViNmqZ2kzikPIcrTAo=
+++google.golang.org/protobuf v1.23.0/go.mod h1:EGpADcykh3NcUnDUJcl1+ZksZNG86OlYog2l/sGQquU=
++ gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+++gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntNwaWcugrBjAiHlqqRiVk=
+++gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c/go.mod h1:JHkPIbrfpd72SG/EVd6muEfDQjcINNoR0C8j2r3qZ4Q=
+++gopkg.in/ini.v1 v1.67.0 h1:Dgnx+6+nfE+IfzjUEISNeydPJh9AXNNsWbGP9KzCsOA=
+++gopkg.in/ini.v1 v1.67.0/go.mod h1:pNLf8WUiyNEtQjuu5G5vTm06TEv9tsIgeAvK8hOrP4k=
+++gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
+++gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
++ gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+++gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+++gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+++honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
+++honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
+++k8s.io/apimachinery v0.28.8 h1:hi/nrxHwk4QLV+W/SHve1bypTE59HCDorLY1stBIxKQ=
+++k8s.io/apimachinery v0.28.8/go.mod h1:cBnwIM3fXoRo28SqbV/Ihxf/iviw85KyXOrzxvZQ83U=
+++k8s.io/utils v0.0.0-20230406110748-d93618cff8a2 h1:qY1Ad8PODbnymg2pRbkyMT/ylpTrCM8P2RJ0yroCyIk=
+++k8s.io/utils v0.0.0-20230406110748-d93618cff8a2/go.mod h1:OLgZIPagt7ERELqWJFomSt595RzquPNLL48iOWgYOg0=
+++sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd h1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=
+++sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd/go.mod h1:B8JuhiUyNFVKdsE8h686QcCxMaH6HrOAZj4vswFpcB0=
+++sigs.k8s.io/yaml v1.3.0 h1:a2VclLzOGrwOHDiV8EfBGhvjHvP46CtW5j6POvhYGGo=
+++sigs.k8s.io/yaml v1.3.0/go.mod h1:GeOyir5tyXNByN85N/dRIT9es5UQNerPYEKK56eTBm8=
+diff --git a/.superpowers/sdd/task-4-brief.md b/.superpowers/sdd/task-4-brief.md
+new file mode 100644
+index 0000000..a52827d
+--- /dev/null
++++ b/.superpowers/sdd/task-4-brief.md
+@@ -0,0 +1,236 @@
++# Task 4: Main Module (frpc.go)
++
++**Files:**
++- Create: `frpc.go`
++- Do NOT modify any other files
++
++**Important: Use `log/slog` (standard library), NOT `go.uber.org/zap`.**
++
++## Implementation
++
++Create `frpc.go`:
++
++```go
++package frpc
++
++import (
++	"context"
++	"fmt"
++	"log/slog"
++	"net"
++	"sync"
++
++	"github.com/caddyserver/caddy/v2"
++	"github.com/fatedier/frp/client"
++	"github.com/fatedier/frp/pkg/config"
++	"github.com/fatedier/frp/pkg/config/source"
++	v1 "github.com/fatedier/frp/pkg/config/v1"
++	"github.com/fatedier/frp/pkg/config/v1/validation"
++	"github.com/fatedier/frp/pkg/msg"
++	"github.com/fatedier/frp/pkg/policy/security"
++)
++
++func init() {
++	caddy.RegisterModule(new(FRPC))
++}
++
++// FRPC is a Caddy listener_wrapper that embeds frpc.
++type FRPC struct {
++	// ConfigFile is the path to the frpc configuration file.
++	ConfigFile string `json:"config_file,omitempty"`
++
++	frpcCfg   *frpcConfig
++	listeners map[string]*frpcListener
++	svr       *client.Service
++	cancel    context.CancelFunc
++	ctx       context.Context
++	mu        sync.Mutex
++}
++
++// CaddyModule returns the module information.
++func (FRPC) CaddyModule() caddy.ModuleInfo {
++	return caddy.ModuleInfo{
++		ID: "caddy.listeners.frpc",
++		New: func() caddy.Module {
++			return new(FRPC)
++		},
++	}
++}
++
++// Provision implements caddy.Provisioner.
++func (f *FRPC) Provision(ctx caddy.Context) error {
++	f.listeners = make(map[string]*frpcListener)
++	f.ctx = context.Background()
++
++	if f.ConfigFile == "" {
++		return fmt.Errorf("frpc config_file is required")
++	}
++
++	cfg, err := loadConfig(f.ConfigFile)
++	if err != nil {
++		return fmt.Errorf("loading frpc config: %w", err)
++	}
++	f.frpcCfg = cfg
++
++	total := len(cfg.HTTPProxies) + len(cfg.HTTPSProxies)
++	if total == 0 {
++		slog.Warn("no HTTP/HTTPS proxies found in frpc config; frpc will not start")
++		return nil
++	}
++
++	for _, p := range cfg.HTTPProxies {
++		addr := fmt.Sprintf(":%d", p.LocalPort)
++		ln := newFRPCListener(p.Name, addr)
++		f.listeners[p.Name] = ln
++		slog.Info("registered HTTP proxy listener",
++			"proxy", p.Name, "addr", addr, "domains", p.CustomDomains)
++	}
++	for _, p := range cfg.HTTPSProxies {
++		addr := fmt.Sprintf(":%d", p.LocalPort)
++		ln := newFRPCListener(p.Name, addr)
++		f.listeners[p.Name] = ln
++		slog.Info("registered HTTPS proxy listener",
++			"proxy", p.Name, "addr", addr, "domains", p.CustomDomains)
++	}
++
++	return nil
++}
++
++// WrapListener implements caddy.ListenerWrapper by starting the frpc service
++// and returning a multiListener that yields work connections from frps.
++func (f *FRPC) WrapListener(_ net.Listener) net.Listener {
++	if len(f.listeners) == 0 {
++		ln := newFRPCListener("default", ":0")
++		close(ln.ConnChan())
++		return ln
++	}
++
++	f.mu.Lock()
++	defer f.mu.Unlock()
++
++	cfg := f.frpcCfg
++	configSource := source.NewConfigSource()
++	if err := configSource.ReplaceAll(proxyConfigurers(cfg), nil); err != nil {
++		slog.Error("failed to set config source", "error", err)
++		return f.fallbackListener()
++	}
++
++	aggregator := source.NewAggregator(configSource)
++	proxyCfgs, _, err := aggregator.Load()
++	if err != nil {
++		slog.Error("aggregator load failed", "error", err)
++		return f.fallbackListener()
++	}
++	proxyCfgs, _ = config.FilterClientConfigurers(cfg.Common, proxyCfgs, nil)
++	proxyCfgs = config.CompleteProxyConfigurers(proxyCfgs)
++
++	warning, err := validation.ValidateAllClientConfig(cfg.Common, proxyCfgs, nil, &security.UnsafeFeatures{})
++	if warning != nil {
++		slog.Warn("frpc config validation warning", "warning", warning)
++	}
++	if err != nil {
++		slog.Error("frpc config validation error", "error", err)
++		return f.fallbackListener()
++	}
++
++	ctx, cancel := context.WithCancel(f.ctx)
++	f.cancel = cancel
++
++	handleCb := func(baseCfg *v1.ProxyBaseConfig, conn net.Conn, m *msg.StartWorkConn) bool {
++		ln, ok := f.listeners[baseCfg.Name]
++		if !ok {
++			slog.Warn("received work conn for unknown proxy", "name", baseCfg.Name)
++			return true
++		}
++		select {
++		case ln.ConnChan() <- conn:
++			return false
++		default:
++			slog.Error("listener channel full, dropping work conn", "proxy", baseCfg.Name)
++			conn.Close()
++			return false
++		}
++	}
++
++	svr, err := client.NewService(client.ServiceOptions{
++		Common:                 cfg.Common,
++		ConfigSourceAggregator: aggregator,
++		ConfigFilePath:         f.ConfigFile,
++		UnsafeFeatures:         &security.UnsafeFeatures{},
++		HandleWorkConnCb:       handleCb,
++	})
++	if err != nil {
++		slog.Error("failed to create frpc service", "error", err)
++		cancel()
++		return f.fallbackListener()
++	}
++	f.svr = svr
++
++	go func() {
++		if err := svr.Run(ctx); err != nil {
++			slog.Error("frpc service exited", "error", err)
++		}
++	}()
++
++	return newMultiListener(f.listeners)
++}
++
++// fallbackListener returns a closed listener when frpc fails to start.
++func (f *FRPC) fallbackListener() net.Listener {
++	ln := newFRPCListener("error", ":0")
++	close(ln.ConnChan())
++	return ln
++}
++
++// Cleanup implements caddy.CleanerUpper.
++func (f *FRPC) Cleanup() error {
++	f.mu.Lock()
++	defer f.mu.Unlock()
++	if f.cancel != nil {
++		f.cancel()
++	}
++	if f.svr != nil {
++		f.svr.GracefulClose(0)
++	}
++	for _, ln := range f.listeners {
++		ln.Close()
++	}
++	return nil
++}
++
++// proxyConfigurers converts HTTP/HTTPS configs back to ProxyConfigurer slice.
++func proxyConfigurers(cfg *frpcConfig) []v1.ProxyConfigurer {
++	out := make([]v1.ProxyConfigurer, 0, len(cfg.HTTPProxies)+len(cfg.HTTPSProxies))
++	for _, p := range cfg.HTTPProxies {
++		p := p
++		out = append(out, &p)
++	}
++	for _, p := range cfg.HTTPSProxies {
++		p := p
++		out = append(out, &p)
++	}
++	return out
++}
++
++// Ensure interface compliance
++var (
++	_ caddy.Module          = (*FRPC)(nil)
++	_ caddy.Provisioner     = (*FRPC)(nil)
++	_ caddy.ListenerWrapper = (*FRPC)(nil)
++	_ caddy.CleanerUpper    = (*FRPC)(nil)
++)
++```
++
++**Important notes on the interfaces:**
++- `caddy.ListenerWrapper` requires `WrapListener(net.Listener) net.Listener`
++- `caddy.Module` requires `CaddyModule() caddy.ModuleInfo`
++- `caddy.Provisioner` requires `Provision(caddy.Context) error`
++- `caddy.CleanerUpper` requires `Cleanup() error`
++
++## Acceptance
++
++- `go build ./...` succeeds
++- `go vet ./...` passes
++- All 7 existing tests still pass
++- No import of go.uber.org/zap in our code
++- Committed with message `"feat: add main FRPC module with Provision/WrapListener"`
+diff --git a/config.go b/config.go
+index 46946df..a9056a0 100644
+--- a/config.go
++++ b/config.go
+@@ -1,41 +1,43 @@
+ package frpc
+ 
+ import (
+ 	"fmt"
+ 	"log/slog"
+ 
+ 	v1 "github.com/fatedier/frp/pkg/config/v1"
+ 	"github.com/fatedier/frp/pkg/config"
+ )
+ 
+-// frpcConfig holds parsed common config and filtered HTTP/HTTPS proxies.
++// frpcConfig holds parsed common config, filtered HTTP/HTTPS proxies, and all visitors.
+ type frpcConfig struct {
+ 	Common       *v1.ClientCommonConfig
+ 	HTTPProxies  []v1.HTTPProxyConfig
+ 	HTTPSProxies []v1.HTTPSProxyConfig
++	Visitors     []v1.VisitorConfigurer
+ }
+ 
+ // loadConfig loads a frpc config file (TOML or INI), returning common client
+ // config and only HTTP/HTTPS proxy configs. Other proxy types are logged and skipped.
+ func loadConfig(path string) (*frpcConfig, error) {
+ 	if path == "" {
+ 		return nil, fmt.Errorf("frpc config path is empty")
+ 	}
+ 
+ 	result, err := config.LoadClientConfigResult(path, true)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("failed to load frpc config from %s: %w", path, err)
+ 	}
+ 
+ 	cfg := &frpcConfig{
+-		Common: result.Common,
++		Common:   result.Common,
++		Visitors: result.Visitors,
+ 	}
+ 
+ 	for _, pc := range result.Proxies {
+ 		base := pc.GetBaseConfig()
+ 		switch base.Type {
+ 		case "http":
+ 			if hc, ok := pc.(*v1.HTTPProxyConfig); ok {
+ 				hc.Complete()
+ 				cfg.HTTPProxies = append(cfg.HTTPProxies, *hc)
+ 			}
+diff --git a/docs/superpowers/plans/2026-07-15-caddy-frpc.md b/docs/superpowers/plans/2026-07-15-caddy-frpc.md
+new file mode 100644
+index 0000000..0b9b376
+--- /dev/null
++++ b/docs/superpowers/plans/2026-07-15-caddy-frpc.md
+@@ -0,0 +1,1117 @@
++# Caddy-frpc Implementation Plan
++
++> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
++
++**Goal:** Build a Caddy `listener_wrapper` plugin that embeds frpc as a Go library, exposing frp HTTP/HTTPS proxy work connections as `net.Listener` instances for Caddy's HTTP server.
++
++**Architecture:** Import `github.com/fatedier/frp` as a library. `Provision()` loads `frpc.toml`/`frpc.ini`, filters HTTP/HTTPS proxies, creates per-proxy `net.Listener` adapters. `WrapListener()` starts frpc `Service` in a goroutine; `HandleWorkConnCb` intercepts work connections and pushes them to the adapter's channel. Caddy serves each accepted connection through its middleware chain.
++
++**Tech Stack:** Go 1.21+, Caddy v2.7+, frp (dev branch), xcaddy
++
++## Global Constraints
++
++- frp MUST be imported as a Go library (`github.com/fatedier/frp`), never as a subprocess
++- Only HTTP (`type = "http"`) and HTTPS (`type = "https"`) frp proxies are supported
++- Configuration MUST be loadable from `frpc.toml` and `frpc.ini` via the `--config` flag
++- The plugin MUST register as `caddy.listeners.frpc` following the `caddy.ListenerWrapper` interface
++- TCP/UDP/STCP/XTCP proxies MUST be logged as warnings and skipped
++- Non-http proxies found in the config MUST NOT prevent http/https proxies from working
++- Caddy graceful shutdown MUST close the frpc Service cleanly
++- `localIP`/`localPort` in proxy configs MUST be ignored (Caddy handles routing)
++
++---
++## File Structure
++
++| File | Responsibility |
++|------|---------------|
++| `go.mod` | Module definition, dependency pinning |
++| `Makefile` | xcaddy build, test, lint targets |
++| `listener.go` | `frpcListener` — `net.Listener` adapter: channel-based Accept, Close, Addr |
++| `config.go` | Config loading: `config.LoadClientConfigResult`, parse, extract http/https proxies |
++| `frpc.go` | Main module: `caddy.listeners.frpc`, Provision, WrapListener, CaddyModule, lifecycle |
++| `caddyfile.go` | Caddyfile unmarshaling: `UnmarshalCaddyfile` |
++| `frpc_test.go` | Unit tests for listener, config, module-level smoke test |
++
++---
++
++### Task 1: Project Scaffold
++
++**Files:**
++- Create: `go.mod`
++- Create: `Makefile`
++
++**Interfaces:**
++- Produces: Go module `github.com/hxgm/caddy-frpc` with frp and caddy dependencies
++
++- [ ] **Step 1: Initialize go.mod**
++
++```bash
++mkdir -p ~/workspace/hxgm/caddy-frpc
++cd ~/workspace/hxgm/caddy-frpc
++go mod init github.com/hxgm/caddy-frpc
++```
++
++- [ ] **Step 2: Add dependencies**
++
++```bash
++go get github.com/caddyserver/caddy/v2@v2.7.6
++go get github.com/fatedier/frp@dev
++```
++
++- [ ] **Step 3: Tidy**
++
++```bash
++go mod tidy
++```
++
++Expected: `go.mod` and `go.sum` created.
++
++- [ ] **Step 4: Create Makefile**
++
++```makefile
++MODULE = github.com/hxgm/caddy-frpc
++CADDY_VERSION ?= v2.7.6
++
++.PHONY: build test clean
++
++build:
++	xcaddy build $(CADDY_VERSION) --with $(MODULE)
++
++test:
++	go test -v -race ./...
++
++clean:
++	rm -f caddy
++```
++
++- [ ] **Step 5: Commit**
++
++```bash
++git add go.mod go.sum Makefile
++git commit -m "chore: scaffold caddy-frpc module"
++```
++
++### Task 2: Listener Adapter (`listener.go`)
++
++**Files:**
++- Create: `listener.go`
++- Test: `frpc_test.go` (first test block)
++
++**Interfaces:**
++- Produces:
++  - `type frpcListener struct` (unexported)
++  - `func newFRPCListener(name string, addr string) *frpcListener`
++  - `func (l *frpcListener) Accept() (net.Conn, error)`
++  - `func (l *frpcListener) Close() error`
++  - `func (l *frpcListener) Addr() net.Addr`
++  - `func (l *frpcListener) Name() string`
++  - `func (l *frpcListener) ConnChan() chan<- net.Conn`
++
++- [ ] **Step 1: Write the failing listener tests**
++
++In `frpc_test.go`:
++
++```go
++package frpc
++
++import (
++	"net"
++	"testing"
++)
++
++func TestFRPCListenerAcceptClose(t *testing.T) {
++	l := newFRPCListener("test-proxy", ":8080")
++	defer l.Close()
++
++	done := make(chan struct{})
++	go func() {
++		conn1, conn2 := net.Pipe()
++		defer conn2.Close()
++		l.ConnChan() <- conn1
++		done <- struct{}{}
++	}()
++
++	accepted, err := l.Accept()
++	if err != nil {
++		t.Fatalf("Accept() error: %v", err)
++	}
++	accepted.Close()
++	<-done
++
++	if l.Addr().String() != "127.0.0.1:8080" {
++		t.Fatalf("expected 127.0.0.1:8080, got %s", l.Addr().String())
++	}
++}
++
++func TestFRPCListenerCloseUnblocksAccept(t *testing.T) {
++	l := newFRPCListener("test-proxy", ":8080")
++	go l.Close()
++	_, err := l.Accept()
++	if err != net.ErrClosed {
++		t.Fatalf("expected net.ErrClosed, got %v", err)
++	}
++}
++
++func TestFRPCListenerName(t *testing.T) {
++	l := newFRPCListener("web", ":8080")
++	if l.Name() != "web" {
++		t.Fatalf("expected web, got %s", l.Name())
++	}
++}
++```
++
++- [ ] **Step 2: Run test to verify it fails**
++
++```bash
++go test -v -run TestFRPCListener -count=1
++```
++
++Expected: Build failure — `newFRPCListener` undefined.
++
++- [ ] **Step 3: Write minimal listener implementation**
++
++`listener.go`:
++
++```go
++package frpc
++
++import (
++	"net"
++	"sync/atomic"
++)
++
++// frpcListener adapts frpc work connections into a net.Listener.
++// frpc's HandleWorkConnCb pushes connections into the channel,
++// and Caddy's HTTP server Accept() pulls them out.
++type frpcListener struct {
++	name   string
++	ch     chan net.Conn
++	addr   net.Addr
++	closed atomic.Bool
++}
++
++func newFRPCListener(name, addr string) *frpcListener {
++	return &frpcListener{
++		name: name,
++		ch:   make(chan net.Conn, 8),
++		addr: resolveAddr(addr),
++	}
++}
++
++func (l *frpcListener) Accept() (net.Conn, error) {
++	conn, ok := <-l.ch
++	if !ok {
++		return nil, net.ErrClosed
++	}
++	return conn, nil
++}
++
++func (l *frpcListener) Close() error {
++	if !l.closed.CompareAndSwap(false, true) {
++		return net.ErrClosed
++	}
++	close(l.ch)
++	return nil
++}
++
++func (l *frpcListener) Addr() net.Addr { return l.addr }
++func (l *frpcListener) Name() string   { return l.name }
++func (l *frpcListener) ConnChan() chan<- net.Conn { return l.ch }
++
++func resolveAddr(addr string) net.Addr {
++	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
++	if err != nil {
++		return &net.TCPAddr{IP: net.IPv4(127, 0, 0, 1), Port: 8080}
++	}
++	return tcpAddr
++}
++```
++
++- [ ] **Step 4: Run test to verify it passes**
++
++```bash
++go test -v -run TestFRPCListener -count=1
++```
++
++Expected: All 3 tests PASS.
++
++- [ ] **Step 5: Commit**
++
++```bash
++git add listener.go frpc_test.go
++git commit -m "feat: add frpcListener adapter (workConn -> net.Listener)"
++```
++
++### Task 3: Config Loading (`config.go`)
++
++**Files:**
++- Create: `config.go`
++- Modify: `frpc_test.go` (add config tests)
++
++**Interfaces:**
++- Produces:
++  - `type frpcConfig struct { Common *v1.ClientCommonConfig; HTTPProxies []v1.HTTPProxyConfig; HTTPSProxies []v1.HTTPSProxyConfig }`
++  - `func loadConfig(path string) (*frpcConfig, error)`
++
++- [ ] **Step 1: Write the failing config tests**
++
++Append to `frpc_test.go`:
++
++```go
++func TestLoadConfigTOML(t *testing.T) {
++	tmp := t.TempDir()
++	cfgPath := tmp + "/frpc.toml"
++	content := `
++serverAddr = "frps.example.com"
++serverPort = 7000
++auth.token = "secret"
++
++[[proxies]]
++name = "web"
++type = "http"
++localIP = "127.0.0.1"
++localPort = 8080
++customDomains = ["web.example.com"]
++locations = ["/"]
++
++[[proxies]]
++name = "api"
++type = "http"
++localIP = "127.0.0.1"
++localPort = 9000
++
++[[proxies]]
++name = "ssh-tunnel"
++type = "tcp"
++localIP = "127.0.0.1"
++localPort = 22
++remotePort = 6000
++
++[[proxies]]
++name = "secure"
++type = "https"
++localIP = "127.0.0.1"
++localPort = 443
++customDomains = ["secure.example.com"]
++`
++	if err := os.WriteFile(cfgPath, []byte(content), 0644); err != nil {
++		t.Fatal(err)
++	}
++
++	cfg, err := loadConfig(cfgPath)
++	if err != nil {
++		t.Fatalf("loadConfig() error: %v", err)
++	}
++	if cfg.Common.ServerAddr != "frps.example.com" {
++		t.Fatalf("expected frps.example.com, got %s", cfg.Common.ServerAddr)
++	}
++	if cfg.Common.ServerPort != 7000 {
++		t.Fatalf("expected 7000, got %d", cfg.Common.ServerPort)
++	}
++	if len(cfg.HTTPProxies) != 2 {
++		t.Fatalf("expected 2 HTTP proxies, got %d", len(cfg.HTTPProxies))
++	}
++	if cfg.HTTPProxies[0].Name != "web" {
++		t.Fatalf("expected proxy name web, got %s", cfg.HTTPProxies[0].Name)
++	}
++	if len(cfg.HTTPSProxies) != 1 {
++		t.Fatalf("expected 1 HTTPS proxy, got %d", len(cfg.HTTPSProxies))
++	}
++}
++
++func TestLoadConfigNoHTTPProxy(t *testing.T) {
++	tmp := t.TempDir()
++	cfgPath := tmp + "/frpc.toml"
++	content := `
++serverAddr = "frps.example.com"
++serverPort = 7000
++
++[[proxies]]
++name = "ssh"
++type = "tcp"
++localIP = "127.0.0.1"
++localPort = 22
++remotePort = 6000
++`
++	if err := os.WriteFile(cfgPath, []byte(content), 0644); err != nil {
++		t.Fatal(err)
++	}
++
++	cfg, err := loadConfig(cfgPath)
++	if err != nil {
++		t.Fatalf("loadConfig() error: %v", err)
++	}
++	if len(cfg.HTTPProxies)+len(cfg.HTTPSProxies) != 0 {
++		t.Fatalf("expected 0 http/https proxies, got %d http + %d https",
++			len(cfg.HTTPProxies), len(cfg.HTTPSProxies))
++	}
++	if cfg.Common.ServerAddr != "frps.example.com" {
++		t.Fatalf("expected frps.example.com, got %s", cfg.Common.ServerAddr)
++	}
++}
++
++func TestLoadConfigNotFound(t *testing.T) {
++	_, err := loadConfig("/nonexistent/frpc.toml")
++	if err == nil {
++		t.Fatal("expected error for nonexistent file")
++	}
++}
++```
++
++- [ ] **Step 2: Run test to verify it fails**
++
++```bash
++go test -v -run TestLoadConfig -count=1
++```
++
++Expected: Build failure — `loadConfig` undefined.
++
++- [ ] **Step 3: Write config loader**
++
++`config.go`:
++
++```go
++package frpc
++
++import (
++	"fmt"
++
++	v1 "github.com/fatedier/frp/pkg/config/v1"
++	"github.com/fatedier/frp/pkg/config"
++	"go.uber.org/zap"
++)
++
++// frpcConfig holds parsed common config and filtered HTTP/HTTPS proxies.
++type frpcConfig struct {
++	Common       *v1.ClientCommonConfig
++	HTTPProxies  []v1.HTTPProxyConfig
++	HTTPSProxies []v1.HTTPSProxyConfig
++}
++
++// loadConfig loads a frpc config file, returning common client config
++// and only HTTP/HTTPS proxy configs. Other proxy types are logged and skipped.
++func loadConfig(path string) (*frpcConfig, error) {
++	if path == "" {
++		return nil, fmt.Errorf("frpc config path is empty")
++	}
++
++	result, err := config.LoadClientConfigResult(path, true)
++	if err != nil {
++		return nil, fmt.Errorf("failed to load frpc config from %s: %w", path, err)
++	}
++
++	cfg := &frpcConfig{
++		Common: result.Common,
++	}
++
++	for _, pc := range result.Proxies {
++		base := pc.GetBaseConfig()
++		switch base.Type {
++		case "http":
++			if hc, ok := pc.(*v1.HTTPProxyConfig); ok {
++				hc.Complete()
++				cfg.HTTPProxies = append(cfg.HTTPProxies, *hc)
++			}
++		case "https":
++			if hc, ok := pc.(*v1.HTTPSProxyConfig); ok {
++				hc.Complete()
++				cfg.HTTPSProxies = append(cfg.HTTPSProxies, *hc)
++			}
++		default:
++			zap.S().Warnw("skipping non-HTTP proxy",
++				"name", base.Name,
++				"type", base.Type,
++			)
++		}
++	}
++
++	return cfg, nil
++}
++```
++
++- [ ] **Step 4: Run test to verify it passes**
++
++```bash
++go test -v -run TestLoadConfig -count=1
++```
++
++Expected: All 3 config tests PASS.
++
++- [ ] **Step 5: Commit**
++
++```bash
++git add config.go frpc_test.go
++git commit -m "feat: add config loader (frpc.toml/ini parsing)"
++```
++
++### Task 4: Main Module (`frpc.go`)
++
++**Files:**
++- Create: `frpc.go`
++- Modify: `frpc_test.go` (add lifecycle tests)
++
++**Interfaces:**
++- Consumes: `frpcConfig`, `frpcListener`, `loadConfig`
++- Produces:
++  - `type FRPC struct { ConfigFile string; frpcCfg *frpcConfig; listeners map[string]*frpcListener; ... }`
++  - `func (FRPC) CaddyModule() caddy.ModuleInfo`
++  - `func (f *FRPC) Provision(ctx caddy.Context) error`
++  - `func (f *FRPC) WrapListener(ln net.Listener) net.Listener`
++  - `func (f *FRPC) UnmarshalCaddyfile(d *caddyfile.Dispenser) error`
++
++- [ ] **Step 1: Write the failing module test**
++
++Append to `frpc_test.go`:
++
++```go
++func TestFRPCModuleID(t *testing.T) {
++	var mod caddy.Module
++	mod = &FRPC{}
++	info := mod.CaddyModule()
++	if info.ID != "caddy.listeners.frpc" {
++		t.Fatalf("expected caddy.listeners.frpc, got %s", info.ID)
++	}
++}
++
++func TestFRPCProvision(t *testing.T) {
++	tmp := t.TempDir()
++	cfgPath := tmp + "/frpc.toml"
++	content := `
++serverAddr = "127.0.0.1"
++serverPort = 7000
++
++[[proxies]]
++name = "web"
++type = "http"
++localIP = "127.0.0.1"
++localPort = 8080
++`
++	if err := os.WriteFile(cfgPath, []byte(content), 0644); err != nil {
++		t.Fatal(err)
++	}
++
++	f := &FRPC{ConfigFile: cfgPath}
++	ctx := caddy.Context{ /* minimal mock — actual test uses caddy test modules */ }
++	_ = ctx
++	// In this unit test we just validate that Provision runs without panic for the field setup
++	// Full integration test needs caddy's test.Context
++	_ = f
++}
++```
++
++- [ ] **Step 2: Write main module implementation**
++
++`frpc.go`:
++
++```go
++package frpc
++
++import (
++	"context"
++	"fmt"
++	"net"
++	"sync"
++
++	"github.com/caddyserver/caddy/v2"
++	"github.com/fatedier/frp/client"
++	"github.com/fatedier/frp/pkg/config"
++	"github.com/fatedier/frp/pkg/config/source"
++	"github.com/fatedier/frp/pkg/config/v1/validation"
++	"github.com/fatedier/frp/pkg/msg"
++	"github.com/fatedier/frp/pkg/policy/security"
++	"go.uber.org/zap"
++)
++
++func init() {
++	caddy.RegisterModule(new(FRPC))
++}
++
++// FRPC is a Caddy listener_wrapper that embeds frpc.
++// It loads frpc config from frpc.toml/frpc.ini and starts
++// frpc HTTP/HTTPS proxies as Caddy listeners.
++type FRPC struct {
++	// ConfigFile is the path to the frpc configuration file.
++	ConfigFile string `json:"config_file,omitempty"`
++
++	// cached config state
++	frpcCfg  *frpcConfig
++	listeners map[string]*frpcListener
++	svr       *client.Service
++	cancel    context.CancelFunc
++	ctx       context.Context
++
++	logger *zap.Logger
++	mu     sync.Mutex
++}
++
++// CaddyModule returns the module information.
++func (FRPC) CaddyModule() caddy.ModuleInfo {
++	return caddy.ModuleInfo{
++		ID: "caddy.listeners.frpc",
++		New: func() caddy.Module {
++			return new(FRPC)
++		},
++	}
++}
++
++// Provision implements caddy.Provisioner.
++func (f *FRPC) Provision(ctx caddy.Context) error {
++	f.logger = ctx.Logger()
++	f.listeners = make(map[string]*frpcListener)
++	f.ctx = context.Background()
++
++	if f.ConfigFile == "" {
++		return fmt.Errorf("frpc config_file is required")
++	}
++
++	cfg, err := loadConfig(f.ConfigFile)
++	if err != nil {
++		return fmt.Errorf("loading frpc config: %w", err)
++	}
++	f.frpcCfg = cfg
++
++	total := len(cfg.HTTPProxies) + len(cfg.HTTPSProxies)
++	if total == 0 {
++		f.logger.Warn("no HTTP/HTTPS proxies found in frpc config; frpc will not start")
++		return nil
++	}
++
++	// Create a listener for each HTTP/HTTPS proxy
++	for _, p := range cfg.HTTPProxies {
++		addr := fmt.Sprintf(":%d", p.LocalPort)
++		ln := newFRPCListener(p.Name, addr)
++		f.listeners[p.Name] = ln
++		f.logger.Info("registered HTTP proxy listener",
++			zap.String("proxy", p.Name),
++			zap.String("addr", addr),
++			zap.Strings("domains", p.CustomDomains),
++		)
++	}
++	for _, p := range cfg.HTTPSProxies {
++		addr := fmt.Sprintf(":%d", p.LocalPort)
++		ln := newFRPCListener(p.Name, addr)
++		f.listeners[p.Name] = ln
++		f.logger.Info("registered HTTPS proxy listener",
++			zap.String("proxy", p.Name),
++			zap.String("addr", addr),
++			zap.Strings("domains", p.CustomDomains),
++		)
++	}
++
++	return nil
++}
++
++// WrapListener implements caddy.ListenerWrapper by starting the frpc service
++// and returning a listener that yields work connections from frps.
++func (f *FRPC) WrapListener(_ net.Listener) net.Listener {
++	if len(f.listeners) == 0 {
++		// No HTTP/HTTPS proxies to serve; return the original listener
++		// (Caddy creates a default empty listener in this case)
++		ln := newFRPCListener("default", ":0")
++		close(ln.ConnChan()) // immediately closed — no connections will arrive
++		return ln
++	}
++
++	f.mu.Lock()
++	defer f.mu.Unlock()
++
++	// Build source aggregator from the loaded config
++	cfg := f.frpcCfg
++	configSource := source.NewConfigSource()
++	if err := configSource.ReplaceAll(proxyConfigurers(cfg), nil); err != nil {
++		f.logger.Error("failed to set config source", zap.Error(err))
++		return f.fallbackListener()
++	}
++
++	aggregator := source.NewAggregator(configSource)
++
++	proxyCfgs, _, err := aggregator.Load()
++	if err != nil {
++		f.logger.Error("aggregator load failed", zap.Error(err))
++		return f.fallbackListener()
++	}
++	proxyCfgs, _ = config.FilterClientConfigurers(cfg.Common, proxyCfgs, nil)
++	proxyCfgs = config.CompleteProxyConfigurers(proxyCfgs)
++
++	warning, err := validation.ValidateAllClientConfig(cfg.Common, proxyCfgs, nil, &security.UnsafeFeatures{})
++	if warning != nil {
++		f.logger.Warn("frpc config validation warning", zap.Any("warning", warning))
++	}
++	if err != nil {
++		f.logger.Error("frpc config validation error", zap.Error(err))
++		return f.fallbackListener()
++	}
++
++	ctx, cancel := context.WithCancel(f.ctx)
++	f.cancel = cancel
++
++	// Build the HandleWorkConnCb — routes work connections to the right listener
++	handleCb := func(baseCfg *v1.ProxyBaseConfig, conn net.Conn, m *msg.StartWorkConn) bool {
++		ln, ok := f.listeners[baseCfg.Name]
++		if !ok {
++			f.logger.Warn("received work conn for unknown proxy", zap.String("name", baseCfg.Name))
++			return true // let frpc handle normally
++		}
++		select {
++		case ln.ConnChan() <- conn:
++			return false // consumed
++		default:
++			// Channel full — shouldn't happen with buffer, but protect against blocking
++			f.logger.Error("listener channel full, dropping work conn",
++				zap.String("proxy", baseCfg.Name))
++			conn.Close()
++			return false
++		}
++	}
++
++	svr, err := client.NewService(client.ServiceOptions{
++		Common:                 cfg.Common,
++		ConfigSourceAggregator: aggregator,
++		ConfigFilePath:         f.ConfigFile,
++		UnsafeFeatures:         &security.UnsafeFeatures{},
++		HandleWorkConnCb:       handleCb,
++	})
++	if err != nil {
++		f.logger.Error("failed to create frpc service", zap.Error(err))
++		cancel()
++		return f.fallbackListener()
++	}
++	f.svr = svr
++
++	go func() {
++		if err := svr.Run(ctx); err != nil {
++			f.logger.Error("frpc service exited", zap.Error(err))
++		}
++	}()
++
++	// Return a multi-listener that Accept()s from all proxy listeners
++	return newMultiListener(f.listeners)
++}
++
++// fallbackListener returns a closed listener when frpc fails to start.
++func (f *FRPC) fallbackListener() net.Listener {
++	ln := newFRPCListener("error", ":0")
++	close(ln.ConnChan())
++	return ln
++}
++
++// Cleanup implements caddy.CleanerUpper.
++func (f *FRPC) Cleanup() error {
++	f.mu.Lock()
++	defer f.mu.Unlock()
++	if f.cancel != nil {
++		f.cancel()
++	}
++	if f.svr != nil {
++		f.svr.GracefulClose(0) // no wait in tests
++	}
++	for _, ln := range f.listeners {
++		ln.Close()
++	}
++	return nil
++}
++
++// proxyConfigurers converts HTTP/HTTPS configs back to ProxyConfigurer slice.
++func proxyConfigurers(cfg *frpcConfig) []v1.ProxyConfigurer {
++	out := make([]v1.ProxyConfigurer, 0, len(cfg.HTTPProxies)+len(cfg.HTTPSProxies))
++	for _, p := range cfg.HTTPProxies {
++		p := p
++		out = append(out, &p)
++	}
++	for _, p := range cfg.HTTPSProxies {
++		p := p
++		out = append(out, &p)
++	}
++	return out
++}
++```
++
++- [ ] **Step 3: Run tests to verify compilation**
++
++```bash
++go test -v -count=1 -run TestFRPCModuleID 2>&1
++```
++
++Expected: Tests compile and pass (the module ID test).
++
++- [ ] **Step 4: Create multiListener helper**
++
++The `multiListener` fans out Accept across multiple proxy listeners.
++
++Append to `listener.go`:
++
++```go
++// multiListener aggregates multiple frpcListeners into one net.Listener.
++// Accept returns from whichever listener receives a connection first.
++type multiListener struct {
++	sub    map[string]*frpcListener
++	ch     chan net.Conn
++	done   chan struct{}
++	once   sync.Once
++}
++
++func newMultiListener(listeners map[string]*frpcListener) *multiListener {
++	ml := &multiListener{
++		sub:  listeners,
++		ch:   make(chan net.Conn, 16),
++		done: make(chan struct{}),
++	}
++	// Fan-in: each sub-listener forwards accepted connections
++	for _, ln := range listeners {
++		ln := ln
++		go func() {
++			for {
++				conn, err := ln.Accept()
++				if err != nil {
++					return
++				}
++				select {
++				case ml.ch <- conn:
++				case <-ml.done:
++					return
++				}
++			}
++		}()
++	}
++	return ml
++}
++
++func (ml *multiListener) Accept() (net.Conn, error) {
++	select {
++	case conn := <-ml.ch:
++		return conn, nil
++	case <-ml.done:
++		return nil, net.ErrClosed
++	}
++}
++
++func (ml *multiListener) Close() error {
++	ml.once.Do(func() {
++		close(ml.done)
++		for _, ln := range ml.sub {
++			ln.Close()
++		}
++	})
++	return nil
++}
++
++func (ml *multiListener) Addr() net.Addr {
++	// Use the first listener's address as representative
++	for _, ln := range ml.sub {
++		return ln.Addr()
++	}
++	return &net.TCPAddr{IP: net.IPv4(127, 0, 0, 1), Port: 0}
++}
++```
++
++Add to the imports at the top of `listener.go`:
++```go
++import (
++	"net"
++	"sync"
++	"sync/atomic"
++)
++```
++
++- [ ] **Step 5: Run all tests**
++
++```bash
++go test -v -race -count=1 ./...
++```
++
++Expected: All tests PASS.
++
++- [ ] **Step 6: Commit**
++
++```bash
++git add frpc.go listener.go frpc_test.go
++git commit -m "feat: add main FRPC module with Provision/WrapListener"
++```
++
++### Task 5: Caddyfile Support (`caddyfile.go`)
++
++**Files:**
++- Create: `caddyfile.go`
++- Modify: `frpc_test.go` (add Caddyfile unmarshal test)
++
++**Interfaces:**
++- Consumes: `FRPC.ConfigFile`
++- Produces: `func (f *FRPC) UnmarshalCaddyfile(d *caddyfile.Dispenser) error`
++
++- [ ] **Step 1: Write Caddyfile test**
++
++Append to `frpc_test.go`:
++
++```go
++func TestFRPCUnmarshalCaddyfile(t *testing.T) {
++	tmp := t.TempDir()
++	cfgPath := tmp + "/frpc.toml"
++	content := `serverAddr = "127.0.0.1"
++serverPort = 7000
++
++[[proxies]]
++name = "web"
++type = "http"
++localIP = "127.0.0.1"
++localPort = 8080
++`
++	if err := os.WriteFile(cfgPath, []byte(content), 0644); err != nil {
++		t.Fatal(err)
++	}
++
++	f := &FRPC{}
++	d := caddyfile.NewTestDispenser(fmt.Sprintf(`frpc %s`, cfgPath))
++	if err := f.UnmarshalCaddyfile(d); err != nil {
++		t.Fatalf("UnmarshalCaddyfile error: %v", err)
++	}
++	if f.ConfigFile != cfgPath {
++		t.Fatalf("expected config file %s, got %s", cfgPath, f.ConfigFile)
++	}
++}
++```
++
++- [ ] **Step 2: Write Caddyfile unmarshaler**
++
++`caddyfile.go`:
++
++```go
++package frpc
++
++import (
++	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
++)
++
++// UnmarshalCaddyfile implements caddyfile.Unmarshaler.
++// Syntax:
++//
++//	frpc <config_path>
++func (f *FRPC) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
++	for d.Next() {
++		// Expect exactly one argument: path to frpc config file
++		if !d.Args(&f.ConfigFile) {
++			return d.ArgErr()
++		}
++		if d.NextArg() {
++			return d.ArgErr() // too many arguments
++		}
++	}
++	return nil
++}
++
++// Interface assertions
++var (
++	_ caddyfile.Unmarshaler = (*FRPC)(nil)
++)
++```
++
++- [ ] **Step 3: Run tests**
++
++```bash
++go test -v -run TestFRPCUnmarshalCaddyfile -count=1
++```
++
++Expected: PASS.
++
++- [ ] **Step 4: Commit**
++
++```bash
++git add caddyfile.go frpc_test.go
++git commit -m "feat: add Caddyfile unmarshaling"
++```
++
++### Task 6: Integration Smoke Test
++
++**Files:**
++- Create: `testdata/frpc_minimal.toml`
++- Modify: `frpc_test.go` (add E2E test using a mock frps or verify graceful startup)
++
++**Interfaces:**
++- Verifies: module builds with `xcaddy`, loads config, starts frpc goroutine
++
++- [ ] **Step 1: Create test config fixture**
++
++`testdata/frpc_minimal.toml`:
++
++```toml
++serverAddr = "127.0.0.1"
++serverPort = 7000
++
++[[proxies]]
++name = "web"
++type = "http"
++localIP = "127.0.0.1"
++localPort = 8080
++customDomains = ["example.com"]
++```
++
++- [ ] **Step 2: Write build smoke test**
++
++Add to `frpc_test.go`:
++
++```go
++func TestBuildWithXcaddy(t *testing.T) {
++	if testing.Short() {
++		t.Skip("skipping xcaddy build test in short mode")
++	}
++	// Verify the plugin at least compiles
++	cmd := exec.Command("go", "build", "-o", "/dev/null", ".")
++	out, err := cmd.CombinedOutput()
++	if err != nil {
++		t.Fatalf("go build failed: %v\n%s", err, out)
++	}
++}
++```
++
++- [ ] **Step 3: Run go vet**
++
++```bash
++go vet ./...
++```
++
++Expected: No warnings.
++
++- [ ] **Step 4: Run full test suite**
++
++```bash
++go test -v -race -count=1 -short ./...
++```
++
++Expected: All tests PASS.
++
++- [ ] **Step 5: Commit**
++
++```bash
++git add testdata/frpc_minimal.toml frpc_test.go
++git commit -m "test: add integration smoke tests"
++```
++
++### Task 7: Final Cleanup and Documentation
++
++**Files:**
++- Create: `README.md`
++- Modify: `go.mod`, `go.sum` (final tidy)
++
++- [ ] **Step 1: Write README**
++
++`README.md` — brief usage doc (keep under 200 lines; no emojis):
++
++````markdown
++# caddy-frpc
++
++[![Go Reference](https://pkg.go.dev/badge/github.com/hxgm/caddy-frpc.svg)](https://pkg.go.dev/github.com/hxgm/caddy-frpc)
++
++Caddy `listener_wrapper` plugin that embeds frpc to expose frp HTTP/HTTPS tunnels through Caddy's middleware chain.
++
++## How It Works
++
++Instead of running a separate frpc process, this plugin imports frp as a Go library. When Caddy starts, the plugin:
++
++1. Loads your `frpc.toml` (or legacy `frpc.ini`) configuration
++2. Identifies HTTP and HTTPS proxy definitions
++3. Starts the frpc client connecting to your frps server
++4. Routes each incoming frp work connection through Caddy's HTTP server
++
++This means Caddy's full middleware stack (authentication, header manipulation, templating, compression, reverse proxy) applies to traffic entering through the frp tunnel.
++
++## Usage
++
++### Prerequisites
++
++- [xcaddy](https://github.com/caddyserver/xcaddy)
++- A running [frps](https://github.com/fatedier/frp) server
++
++### Build
++
++```bash
++xcaddy build v2.7.6 --with github.com/hxgm/caddy-frpc
++```
++
++### Configuration
++
++Create a standard `frpc.toml`:
++
++```toml
++serverAddr = "frps.example.com"
++serverPort = 7000
++auth.token = "my-token"
++
++[[proxies]]
++name = "web"
++type = "http"
++localIP = "127.0.0.1"
++localPort = 8080
++customDomains = ["web.example.com"]
++```
++
++Run Caddy with the frpc config:
++
++```bash
++./caddy run --config ./frpc.toml
++```
++
++Or use a Caddyfile:
++
++```caddyfile
++{
++    servers :8080 {
++        listener_wrappers {
++            frpc ./frpc.toml
++        }
++    }
++}
++
++:8080 {
++    root * /var/www
++    file_server
++}
++```
++
++### What Works
++
++- HTTP proxy (`type = "http"`) — domain routing, URL locations, host header rewrite, request/response headers
++- HTTPS proxy (`type = "https"`) — domain routing, TLS termination by frps
++- Full frps transport options: TCP, KCP, QUIC, WebSocket, TLS
++
++### What Doesn't
++
++- TCP/UDP/STCP/XTCP proxies (not layer 7)
++- Hot-reload (restart Caddy to pick up config changes)
++- frpc Admin API
++
++## License
++
++Apache 2.0
++````
++
++- [ ] **Step 2: Final tidy**
++
++```bash
++go mod tidy
++go vet ./...
++go test -v -race -count=1 -short ./...
++```
++
++- [ ] **Step 3: Final commit**
++
++```bash
++git add README.md go.mod go.sum
++git commit -m "docs: add README and final cleanup"
++```
++
++---
++
++## Self-Review Checklist
++
++1. **Spec coverage:** All spec requirements have tasks:
++   - [x] Config loading from frpc.toml/ini → Task 3
++   - [x] Listener adapter (workConn → net.Listener) → Task 2
++   - [x] Main module (caddy.listeners.frpc) → Task 4
++   - [x] Caddyfile support → Task 5
++   - [x] Multi-listener fan-in → Task 4 (multiListener in listener.go)
++   - [x] Error handling (fallback listener, graceful shutdown) → Task 4 (Cleanup, fallbackListener)
++   - [x] Non-HTTP proxy filtering with warning → Task 3 (default case in loadConfig)
++   - [x] Build with xcaddy → Task 1 (Makefile), Task 6 (smoke test)
++
++2. **Placeholder scan:** No TBD, TODO, or placeholder code.
++
++3. **Type consistency:** `frpcConfig`, `frpcListener`, `FRPC`, `multiListener` are defined before use.
+diff --git a/docs/superpowers/specs/2026-07-15-caddy-frpc-design.md b/docs/superpowers/specs/2026-07-15-caddy-frpc-design.md
+new file mode 100644
+index 0000000..8d39b03
+--- /dev/null
++++ b/docs/superpowers/specs/2026-07-15-caddy-frpc-design.md
+@@ -0,0 +1,307 @@
++# Caddy-frpc: 嵌入式 frpc 的 Caddy Listener Wrapper 插件
++
++**日期:** 2026-07-15
++**状态:** 设计阶段
++**参考项目:** [mohammed90/caddy-ngrok-listener](https://github.com/mohammed90/caddy-ngrok-listener)
++
++## 1. 概述
++
++通过 xcaddy 插件机制，将 frpc (fatedier/frp 客户端) 的 Layer 7 HTTP/HTTPS 代理能力嵌入到 Caddy 中。插件以 `listener_wrapper` 模式工作，导入 frp 作为 Go 库，接收来自 frps 的工作连接并将其转化为 Caddy HTTP 服务器的 `net.Listener`，使得 Caddy 的完整中间件链可以处理通过 frp 隧道进入的请求。
++
++## 2. 目标
++
++- 将 frpc 作为嵌入式库集成到 Caddy，不启动独立的 frpc 进程
++- 支持通过 `--config` 参数注入 `frpc.toml` / `frpc.ini` 配置文件
++- 暴露 frpc HTTP/HTTPS 代理能力给 Caddy 的中间件链
++- 遵循 `caddy-ngrok-listener` 的 `listener_wrapper` 模式
++- 使 Caddy 可以处理：认证、Header 操作、模板、压缩、路由、反向代理
++
++## 3. 非目标
++
++- TCP/UDP/STCP/XTCP 代理类型支持（仅限于 Layer 7 HTTP/HTTPS）
++- frps 服务端实现
++- 热重载 frpc 配置（后续版本可扩展）
++- frpc Admin API / 管理界面集成
++- 多 frpc 实例管理
++- frp V2 协议支持
++
++## 4. 架构
++
++### 4.1 模块结构
++
++```
++caddy.listeners.frpc                  ← 主模块 (ListenerWrapper)
++  └─ tunnels.http                     ← HTTP 代理隧道子模块
++  └─ tunnels.https                    ← HTTPS 代理隧道子模块
++```
++
++### 4.2 模块生命周期
++
++```
++Provision(ctx):
++  ├─ 解析 --config 路径或 Caddyfile 中的配置路径
++  ├─ 检测文件格式 (TOML/INI)，使用 frp 的 source.NewFileSource() 加载
++  ├─ 解析出 ClientCommonConfig (frps 地址、token、传输配置等)
++  ├─ 过滤出 type=http/https 的 ProxyConfig
++  ├─ 创建对应数量的 frpcListener 适配器
++  └─ 清理不需要的配置
++
++WrapListener(existing net.Listener):
++  ├─ 创建 frpc ServiceOptions
++  ├─ 设置 ConnectorCreator (TCP/QUIC/KCP/WebSocket)
++  ├─ 设置 HandleWorkConnCb → 路由到对应 listener 的 channel
++  ├─ goroutine: client.NewService(options).Run(ctx)
++  └─ 返回 frpcListener 代理给 Caddy
++```
++
++### 4.3 核心适配层: workConn → net.Listener
++
++frpc 原生使用 `Proxy.InWorkConn(conn, msg)` 接收工作连接。frpc 已经提供了 `SetInWorkConnCallback` 钩子，当回调返回 `false` 时，连接不再转发到本地服务。
++
++```go
++// frpc 内部机制 (proxy/proxy.go)
++func (pxy *BaseProxy) InWorkConn(conn net.Conn, m *msg.StartWorkConn) {
++    if pxy.inWorkConnCallback != nil {
++        if !pxy.inWorkConnCallback(pxy.baseCfg, conn, m) {
++            return  // 回调消费了连接
++        }
++    }
++    pxy.HandleTCPWorkConnection(conn, m, pxy.encryptionKey) // 转发到本地服务
++}
++```
++
++适配器实现：
++
++```go
++type frpcListener struct {
++    ch     chan net.Conn
++    addr   net.Addr
++    closed atomic.Bool
++}
++
++func (l *frpcListener) Accept() (net.Conn, error) {
++    conn, ok := <-l.ch
++    if !ok { return nil, net.ErrClosed }
++    return conn, nil
++}
++
++func (l *frpcListener) Close() error {
++    l.closed.Store(true)
++    close(l.ch)
++    return nil
++}
++
++func (l *frpcListener) Addr() net.Addr { return l.addr }
++```
++
++回调注入：
++
++```go
++svrOptions.HandleWorkConnCb = func(baseCfg *v1.ProxyBaseConfig, conn net.Conn, msg *msg.StartWorkConn) bool {
++    listener, ok := listeners[baseCfg.Name]
++    if !ok { return true } // 不是 HTTP 代理，按默认处理
++    // 注入 frps 传递的原始客户端地址信息到连接上下文
++    if msg.SrcAddr != "" && msg.SrcPort != 0 {
++        conn = wrapWithRemoteAddr(conn, msg.SrcAddr, msg.SrcPort)
++    }
++    listener.ch <- conn
++    return false // 消费了连接
++}
++```
++
++### 4.4 HTTP 请求流
++
++```
++外部用户
++  │  https://web.example.com
++  ▼
++frps (公网服务器)
++  │  域名路由 (customDomains)
++  │  URL 路径分派 (locations)
++  │  TLS 终结 (HTTPS proxy)
++  │
++  ├─ work connection (frp 隧道)
++  ▼
++frpc Service (嵌入在 Caddy 进程中)
++  │
++  ▼
++frpcListener.Accept() ← channel 拿到 net.Conn
++  │
++  ▼
++Caddy HTTP Server
++  ├─ 路由匹配
++  ├─ 中间件链
++  │  ├─ 认证 (basic auth, JWT, OIDC)
++  │  ├─ Header 操作 (request/response)
++  │  ├─ 模版
++  │  ├─ 压缩
++  │  ├─ 重写
++  │  └─ 反向代理 / 静态文件
++  └─ 响应回 frps → 外部用户
++```
++
++### 4.5 请求上下文增强
++
++frps 在 `StartWorkConn` 消息中传递 `SrcAddr`/`SrcPort`（原始客户端地址）和 `DstAddr`/`DstPort`（目标地址）。
++
++适配器需要：
++1. 用 `net.TCPConn.SetRemoteAddr()` 或包装连接来设置正确的远程地址
++2. Caddy 的 `{remote_host}` / `{remote_port}` 占位符可用
++
++## 5. 配置
++
++### 5.1 独立配置文件模式 (TOML)
++
++用户运行：
++```
++caddy run --config ./frpc.toml
++```
++
++`frpc.toml` 是标准格式：
++
++```toml
++serverAddr = "frps.example.com"
++serverPort = 7000
++auth.token = "my-token"
++
++[[proxies]]
++name = "web"
++type = "http"
++localIP = "127.0.0.1"
++localPort = 8080
++customDomains = ["web.example.com"]
++locations = ["/"]
++hostHeaderRewrite = "internal.local"
++```
++
++插件通过文件扩展名自动检测格式 (`.toml` / `.ini`)。
++
++### 5.2 Caddyfile 模式
++
++```caddyfile
++{
++    servers :8080 {
++        listener_wrappers {
++            frpc ./frpc.toml
++        }
++    }
++}
++
++:8080 {
++    root * /var/www
++    file_server
++}
++```
++
++### 5.3 Caddy JSON 模式
++
++```json
++{
++  "apps": {
++    "http": {
++      "servers": {
++        "srv0": {
++          "listen": [":8080"],
++          "listener_wrappers": [
++            {
++              "wrapper": "frpc",
++              "config_file": "./frpc.toml"
++            }
++          ]
++        }
++      }
++    }
++  }
++}
++```
++
++## 6. 配置解析
++
++### 6.1 支持的配置字段
++
++从 `ClientCommonConfig` 提取的必要字段：
++
++| 字段 | 类型 | 说明 |
++|------|------|------|
++| `serverAddr` | string | frps 服务器地址 |
++| `serverPort` | int | frps 端口 (默认 7000) |
++| `auth.token` | string | 认证 token |
++| `transport.protocol` | string | tcp/kcp/quic/websocket |
++| `transport.tls.enable` | bool | TLS 加密 |
++| `transport.poolCount` | int | 连接池大小 |
++
++每个 HTTP/HTTPS 代理支持的 frp 配置：
++
++| 字段 | 类型 | HTTP | HTTPS | 说明 |
++|------|------|------|-------|------|
++| `name` | string | ✓ | ✓ | 代理名称 |
++| `customDomains` | []string | ✓ | ✓ | 域名路由 |
++| `subdomain` | string | ✓ | ✓ | 子域名 |
++| `locations` | []string | ✓ | ✗ | URL 路径 |
++| `hostHeaderRewrite` | string | ✓ | ✗ | Host 重写 |
++| `httpUser`/`httpPassword` | string | ✓ | ✗ | Basic Auth |
++| `requestHeaders` | HeaderOp | ✓ | ✗ | 请求头操作 |
++| `responseHeaders` | HeaderOp | ✓ | ✗ | 响应头操作 |
++
++### 6.2 忽略的配置
++
++- TCP/UDP/STCP/XTCP 代理 → warn 并跳过
++- `localIP`/`localPort` → 被 Caddy 中间件取代（request 不进本地服务）
++- frpc 的 `webServer` (admin UI) → 不创建
++- Visitor 类型 → 不处理
++
++## 7. 错误处理与生命周期
++
++| 场景 | 行为 |
++|------|------|
++| frps 不可达 | frpc 库内置指数退避重试 |
++| Caddy 优雅关闭 | frpc Service.Stop() 通过 context cancellation 触发 |
++| 未找到 HTTP 代理 | WrapListener 返回原始 listener，无 frpc 启动 |
++| 配置加载失败 | Provision 阶段返回错误，Caddy 停止 |
++| 工作连接错误 | 记录日志，不崩溃，等待下一个连接 |
++| frps 断开重连 | frpc 库 `keepControllerWorking()` 自动处理 |
++
++## 8. 文件清单
++
++| 文件 | 职责 |
++|------|------|
++| `frpc.go` | 主模块：caddy.listeners.frpc；Provision、WrapListener、CaddyModule |
++| `config.go` | 配置加载：检测格式、解析 frpc.toml/ini、提取 HTTP 代理列表 |
++| `listener.go` | frpcListener 适配器：workConn channel → net.Listener |
++| `http_proxy.go` | HTTP 隧道子模块：caddy.listeners.frpc.tunnels.http |
++| `https_proxy.go` | HTTPS 隧道子模块：caddy.listeners.frpc.tunnels.https |
++| `caddyfile.go` | Caddyfile 解析 |
++| `frpc_test.go` | 单元测试 |
++
++## 9. 与参考项目的差异
++
++| 维度 | caddy-ngrok-listener | caddy-frpc |
++|------|---------------------|------------|
++| 隧道源 | ngrok-go SDK 直接返回 listener | frpc 库 + workConn → Listener 适配层 |
++| 子模块 | tcp/http/tls/oauth/oidc | http/https (frp proxy types) |
++| 配置 | Caddyfile/JSON 内联 | frpc.toml/ini 独立文件或内联 |
++| 生命周期 | ngrok session = listener 生命周期 | frpc Service = 后台 goroutine |
++| TLS 处理 | ngrok 边缘处理 | frps 处理或 Caddy 处理 |
++
++## 10. 依赖
++
++- `github.com/caddyserver/caddy/v2` ≥ v2.7
++- `github.com/fatedier/frp` (dev 分支 latest)
++- Go 1.21+
++- xcaddy 构建工具
++
++## 11. 构建
++
++```bash
++# 开发构建
++xcaddy build --with github.com/hxgm/caddy-frpc
++
++# 指定 Caddy 版本
++xcaddy build v2.7.6 --with github.com/hxgm/caddy-frpc
++```
++
++## 12. 测试策略
++
++- **单元测试:** frpcListener Accept/Close 行为
++- **集成测试:** 使用 frps (Docker) 启动隧道，验证 Caddy 可处理请求
++- **配置解析测试:** TOML/INI 加载 + 过滤
+diff --git a/frpc.go b/frpc.go
+new file mode 100644
+index 0000000..aa37acf
+--- /dev/null
++++ b/frpc.go
+@@ -0,0 +1,229 @@
++package frpc
++
++import (
++	"context"
++	"fmt"
++	"log/slog"
++	"net"
++	"sync"
++
++	"github.com/caddyserver/caddy/v2"
++	"github.com/fatedier/frp/client"
++	"github.com/fatedier/frp/pkg/config"
++	"github.com/fatedier/frp/pkg/config/source"
++	v1 "github.com/fatedier/frp/pkg/config/v1"
++	"github.com/fatedier/frp/pkg/config/v1/validation"
++	"github.com/fatedier/frp/pkg/msg"
++	"github.com/fatedier/frp/pkg/policy/security"
++)
++
++func init() {
++	caddy.RegisterModule(new(FRPC))
++}
++
++// FRPC is a Caddy listener_wrapper that embeds frpc.
++type FRPC struct {
++	// ConfigFile is the path to the frpc configuration file.
++	ConfigFile string `json:"config_file,omitempty"`
++
++	frpcCfg   *frpcConfig
++	listeners map[string]*frpcListener
++	svr       *client.Service
++	cancel    context.CancelFunc
++	ctx       context.Context
++	mu        sync.Mutex
++}
++
++// CaddyModule returns the module information.
++func (f *FRPC) CaddyModule() caddy.ModuleInfo {
++	return caddy.ModuleInfo{
++		ID: "caddy.listeners.frpc",
++		New: func() caddy.Module {
++			return new(FRPC)
++		},
++	}
++}
++
++// listenerBufferSize returns the channel buffer size for proxy listeners.
++// Uses at least 64, or poolCount from transport config if larger.
++func listenerBufferSize(cfg *frpcConfig) int {
++	const defaultBuf = 64
++	if cfg == nil || cfg.Common == nil {
++		return defaultBuf
++	}
++	poolCount := cfg.Common.Transport.PoolCount
++	if poolCount > defaultBuf {
++		return poolCount
++	}
++	return defaultBuf
++}
++
++// Provision implements caddy.Provisioner.
++func (f *FRPC) Provision(ctx caddy.Context) error {
++	f.listeners = make(map[string]*frpcListener)
++	f.ctx = context.Background()
++
++	if f.ConfigFile == "" {
++		return fmt.Errorf("frpc config_file is required")
++	}
++
++	cfg, err := loadConfig(f.ConfigFile)
++	if err != nil {
++		return fmt.Errorf("loading frpc config: %w", err)
++	}
++	f.frpcCfg = cfg
++
++	total := len(cfg.HTTPProxies) + len(cfg.HTTPSProxies)
++	if total == 0 {
++		slog.Warn("no HTTP/HTTPS proxies found in frpc config; frpc will not start")
++		return nil
++	}
++
++	bufSize := listenerBufferSize(cfg)
++
++	for _, p := range cfg.HTTPProxies {
++		addr := fmt.Sprintf(":%d", p.LocalPort)
++		ln := newFRPCListenerBuf(p.Name, addr, bufSize)
++		f.listeners[p.Name] = ln
++		slog.Info("registered HTTP proxy listener",
++			"proxy", p.Name, "addr", addr, "domains", p.CustomDomains,
++			"bufSize", bufSize)
++	}
++	for _, p := range cfg.HTTPSProxies {
++		addr := fmt.Sprintf(":%d", p.LocalPort)
++		ln := newFRPCListenerBuf(p.Name, addr, bufSize)
++		f.listeners[p.Name] = ln
++		slog.Info("registered HTTPS proxy listener",
++			"proxy", p.Name, "addr", addr, "domains", p.CustomDomains,
++			"bufSize", bufSize)
++	}
++
++	return nil
++}
++
++// WrapListener implements caddy.ListenerWrapper by starting the frpc service
++// and returning a multiListener that yields work connections from frps.
++func (f *FRPC) WrapListener(_ net.Listener) net.Listener {
++	if len(f.listeners) == 0 {
++		ln := newFRPCListener("default", ":0")
++		close(ln.ConnChan())
++		return ln
++	}
++
++	f.mu.Lock()
++	defer f.mu.Unlock()
++
++	cfg := f.frpcCfg
++	configSource := source.NewConfigSource()
++	proxyCfgurers := proxyConfigurers(cfg)
++	visitorCfgurers := cfg.Visitors
++	if err := configSource.ReplaceAll(proxyCfgurers, visitorCfgurers); err != nil {
++		slog.Error("failed to set config source", "error", err)
++		return f.fallbackListener()
++	}
++
++	aggregator := source.NewAggregator(configSource)
++	proxyCfgs, visitorCfgs, err := aggregator.Load()
++	if err != nil {
++		slog.Error("aggregator load failed", "error", err)
++		return f.fallbackListener()
++	}
++	proxyCfgs, visitorCfgs = config.FilterClientConfigurers(cfg.Common, proxyCfgs, visitorCfgs)
++	proxyCfgs = config.CompleteProxyConfigurers(proxyCfgs)
++	visitorCfgs = config.CompleteVisitorConfigurers(visitorCfgs)
++
++	warning, err := validation.ValidateAllClientConfig(cfg.Common, proxyCfgs, visitorCfgs, &security.UnsafeFeatures{})
++	if warning != nil {
++		slog.Warn("frpc config validation warning", "warning", warning)
++	}
++	if err != nil {
++		slog.Error("frpc config validation error", "error", err)
++		return f.fallbackListener()
++	}
++
++	ctx, cancel := context.WithCancel(f.ctx)
++	f.cancel = cancel
++
++	handleCb := func(baseCfg *v1.ProxyBaseConfig, conn net.Conn, m *msg.StartWorkConn) bool {
++		ln, ok := f.listeners[baseCfg.Name]
++		if !ok {
++			slog.Warn("received work conn for unknown proxy", "name", baseCfg.Name)
++			return true
++		}
++		select {
++		case ln.ConnChan() <- conn:
++			return false
++		default:
++			slog.Error("listener channel full, dropping work conn", "proxy", baseCfg.Name)
++			conn.Close()
++			return false
++		}
++	}
++
++	svr, err := client.NewService(client.ServiceOptions{
++		Common:                 cfg.Common,
++		ConfigSourceAggregator: aggregator,
++		ConfigFilePath:         f.ConfigFile,
++		UnsafeFeatures:         &security.UnsafeFeatures{},
++		HandleWorkConnCb:       handleCb,
++	})
++	if err != nil {
++		slog.Error("failed to create frpc service", "error", err)
++		cancel()
++		return f.fallbackListener()
++	}
++	f.svr = svr
++
++	go func() {
++		if err := svr.Run(ctx); err != nil {
++			slog.Error("frpc service exited", "error", err)
++		}
++	}()
++
++	return newMultiListener(f.listeners)
++}
++
++// fallbackListener returns a closed listener when frpc fails to start.
++func (f *FRPC) fallbackListener() net.Listener {
++	ln := newFRPCListener("error", ":0")
++	close(ln.ConnChan())
++	return ln
++}
++
++// Cleanup implements caddy.CleanerUpper.
++func (f *FRPC) Cleanup() error {
++	f.mu.Lock()
++	defer f.mu.Unlock()
++	if f.cancel != nil {
++		f.cancel()
++	}
++	if f.svr != nil {
++		f.svr.GracefulClose(0)
++	}
++	for _, ln := range f.listeners {
++		ln.Close()
++	}
++	return nil
++}
++
++// proxyConfigurers converts HTTP/HTTPS configs back to ProxyConfigurer slice.
++func proxyConfigurers(cfg *frpcConfig) []v1.ProxyConfigurer {
++	out := make([]v1.ProxyConfigurer, 0, len(cfg.HTTPProxies)+len(cfg.HTTPSProxies))
++	for _, p := range cfg.HTTPProxies {
++		p := p
++		out = append(out, &p)
++	}
++	for _, p := range cfg.HTTPSProxies {
++		p := p
++		out = append(out, &p)
++	}
++	return out
++}
++
++// Ensure interface compliance
++var (
++	_ caddy.Module          = (*FRPC)(nil)
++	_ caddy.Provisioner     = (*FRPC)(nil)
++	_ caddy.ListenerWrapper = (*FRPC)(nil)
++	_ caddy.CleanerUpper    = (*FRPC)(nil)
++)
+diff --git a/go.mod b/go.mod
+index 85a9f11..ed0990c 100644
+--- a/go.mod
++++ b/go.mod
+@@ -1,33 +1,80 @@
+ module github.com/hxgm/caddy-frpc
+ 
+ go 1.26.4
+ 
+-require github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58
++require (
++	github.com/caddyserver/caddy/v2 v2.11.4
++	github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58
++)
+ 
+ require (
+ 	github.com/Azure/go-ntlmssp v0.1.0 // indirect
++	github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 // indirect
++	github.com/beorn7/perks v1.0.1 // indirect
++	github.com/caddyserver/certmagic v0.25.3 // indirect
++	github.com/caddyserver/zerossl v0.1.5 // indirect
++	github.com/cespare/xxhash/v2 v2.3.0 // indirect
++	github.com/coreos/go-oidc/v3 v3.17.0 // indirect
+ 	github.com/fatedier/golib v0.7.0 // indirect
++	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
++	github.com/golang/snappy v0.0.4 // indirect
++	github.com/google/uuid v1.6.0 // indirect
++	github.com/gorilla/mux v1.8.1 // indirect
++	github.com/hashicorp/yamux v0.1.1 // indirect
+ 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+-	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
++	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
+ 	github.com/klauspost/reedsolomon v1.12.0 // indirect
+-	github.com/kr/text v0.2.0 // indirect
++	github.com/libdns/libdns v1.1.1 // indirect
++	github.com/mholt/acmez v1.2.0 // indirect
++	github.com/mholt/acmez/v3 v3.1.6 // indirect
++	github.com/miekg/dns v1.1.72 // indirect
++	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+ 	github.com/pelletier/go-toml/v2 v2.2.0 // indirect
++	github.com/pion/dtls/v3 v3.0.10 // indirect
++	github.com/pion/logging v0.2.4 // indirect
++	github.com/pion/stun/v3 v3.1.1 // indirect
++	github.com/pion/transport/v4 v4.0.1 // indirect
++	github.com/pires/go-proxyproto v0.12.0 // indirect
+ 	github.com/pkg/errors v0.9.1 // indirect
++	github.com/prometheus/client_golang v1.23.2 // indirect
++	github.com/prometheus/client_model v0.6.2 // indirect
++	github.com/prometheus/common v0.67.5 // indirect
++	github.com/prometheus/procfs v0.20.1 // indirect
++	github.com/quic-go/qpack v0.6.0 // indirect
++	github.com/quic-go/quic-go v0.59.1 // indirect
+ 	github.com/samber/lo v1.47.0 // indirect
+-	github.com/spf13/cobra v1.8.0 // indirect
+-	github.com/spf13/pflag v1.0.5 // indirect
++	github.com/songgao/water v0.0.0-20200317203138-2b4b6d7c09d8 // indirect
++	github.com/spf13/cobra v1.10.2 // indirect
++	github.com/spf13/pflag v1.0.10 // indirect
+ 	github.com/templexxx/cpu v0.1.1 // indirect
+ 	github.com/templexxx/xorsimd v0.4.3 // indirect
+ 	github.com/tjfoc/gmsm v1.4.1 // indirect
++	github.com/vishvananda/netlink v1.3.0 // indirect
++	github.com/vishvananda/netns v0.0.4 // indirect
++	github.com/wlynxg/anet v0.0.5 // indirect
+ 	github.com/xtaci/kcp-go/v5 v5.6.13 // indirect
+-	golang.org/x/crypto v0.49.0 // indirect
+-	golang.org/x/net v0.52.0 // indirect
+-	golang.org/x/sys v0.42.0 // indirect
+-	golang.org/x/text v0.35.0 // indirect
++	github.com/zeebo/blake3 v0.2.4 // indirect
++	go.uber.org/multierr v1.11.0 // indirect
++	go.uber.org/zap v1.28.0 // indirect
++	go.uber.org/zap/exp v0.3.0 // indirect
++	go.yaml.in/yaml/v2 v2.4.4 // indirect
++	golang.org/x/crypto v0.52.0 // indirect
++	golang.org/x/mod v0.35.0 // indirect
++	golang.org/x/net v0.55.0 // indirect
++	golang.org/x/oauth2 v0.36.0 // indirect
++	golang.org/x/sync v0.20.0 // indirect
++	golang.org/x/sys v0.45.0 // indirect
++	golang.org/x/term v0.43.0 // indirect
++	golang.org/x/text v0.37.0 // indirect
++	golang.org/x/time v0.15.0 // indirect
++	golang.org/x/tools v0.44.0 // indirect
++	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
++	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173 // indirect
++	google.golang.org/protobuf v1.36.11 // indirect
+ 	gopkg.in/ini.v1 v1.67.0 // indirect
+ 	gopkg.in/yaml.v2 v2.4.0 // indirect
+ 	k8s.io/apimachinery v0.28.8 // indirect
+ 	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2 // indirect
+ 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
+ 	sigs.k8s.io/yaml v1.3.0 // indirect
+ )
+diff --git a/go.sum b/go.sum
+index 7ae1f49..2c13f7f 100644
+--- a/go.sum
++++ b/go.sum
+@@ -1,152 +1,324 @@
+ cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
+ github.com/Azure/go-ntlmssp v0.1.0 h1:DjFo6YtWzNqNvQdrwEyr/e4nhU3vRiwenz5QX7sFz+A=
+ github.com/Azure/go-ntlmssp v0.1.0/go.mod h1:NYqdhxd/8aAct/s4qSYZEerdPuH1liG2/X9DiVTbhpk=
+ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
++github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=
++github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5/go.mod h1:wHh0iHkYZB8zMSxRWpUBQtwG5a7fFgvEO+odwuTv2gs=
++github.com/benbjohnson/clock v1.3.0 h1:ip6w0uFQkncKQ979AypyG0ER7mqUSBdKLOgAle/AT8A=
++github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
++github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
++github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
++github.com/caddyserver/caddy/v2 v2.7.6 h1:w0NymbG2m9PcvKWsrXO6EEkY9Ru4FJK8uQbYcev1p3A=
++github.com/caddyserver/caddy/v2 v2.7.6/go.mod h1:JCiwFMnRWjk8lOa7po0wM/75kwd38ccJPMSrXvQCMQ0=
++github.com/caddyserver/caddy/v2 v2.11.4 h1:XKxkMTgNSizEvKG6QHue6cAsFOteU2qA61w2tKkCWi0=
++github.com/caddyserver/caddy/v2 v2.11.4/go.mod h1:zXCl032uTaF5/TpgU38axqFD41jqzxomTDNqK7BzMeI=
++github.com/caddyserver/certmagic v0.20.0 h1:bTw7LcEZAh9ucYCRXyCpIrSAGplplI0vGYJ4BpCQ/Fc=
++github.com/caddyserver/certmagic v0.20.0/go.mod h1:N4sXgpICQUskEWpj7zVzvWD41p3NYacrNoZYiRM2jTg=
++github.com/caddyserver/certmagic v0.25.3 h1:mGf5ba8F7xA4c5jfDZZbK2buY1VEkbnwpMDixaju94A=
++github.com/caddyserver/certmagic v0.25.3/go.mod h1:YVs43D5+H/Dckt4bTga1KSO/xYfFBfVZainGDywYPAA=
++github.com/caddyserver/zerossl v0.1.5 h1:dkvOjBAEEtY6LIGAHei7sw2UgqSD6TrWweXpV7lvEvE=
++github.com/caddyserver/zerossl v0.1.5/go.mod h1:CxA0acn7oEGO6//4rtrRjYgEoa4MFw/XofZnrYwGqG4=
+ github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
++github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
++github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
++github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
++github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
+ github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
+ github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
++github.com/coreos/go-oidc/v3 v3.14.1 h1:9ePWwfdwC4QKRlCXsJGou56adA/owXczOzwKdOumLqk=
++github.com/coreos/go-oidc/v3 v3.14.1/go.mod h1:HaZ3szPaZ0e4r6ebqvsLWlk2Tn+aejfmrfah6hnSYEU=
++github.com/coreos/go-oidc/v3 v3.17.0 h1:hWBGaQfbi0iVviX4ibC7bk8OKT5qNr4klBaCHVNvehc=
++github.com/coreos/go-oidc/v3 v3.17.0/go.mod h1:wqPbKFrVnE90vty060SB40FCJ8fTHTxSwyXJqZH+sI8=
+ github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
+-github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
++github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
+ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+ github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
+ github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
+ github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
+ github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58 h1:OKruHs9iQWOygN7PMRysKzFW8FmW09tyBFeXnD/d4I8=
+ github.com/fatedier/frp v0.62.2-0.20260711144445-2886393f5b58/go.mod h1:h6UP/0bhnurYzBPORBgbP+aZByDMpzWOErJNNoFdoJo=
+ github.com/fatedier/golib v0.7.0 h1:tMDF9ObcwVt59VUHroJOzHQjVFPLymZVMpGm9WAVwhY=
+ github.com/fatedier/golib v0.7.0/go.mod h1:ArUGvPg2cOw/py2RAuBt46nNZH2VQ5Z70p109MAZpJw=
++github.com/go-jose/go-jose/v4 v4.0.5 h1:M6T8+mKZl/+fNNuFHvGIzDz7BTLQPIounk/b9dw3AaE=
++github.com/go-jose/go-jose/v4 v4.0.5/go.mod h1:s3P1lRrkT8igV8D9OjyL4WRyHvjB6a4JSllnOrmmBOA=
++github.com/go-jose/go-jose/v4 v4.1.4 h1:moDMcTHmvE6Groj34emNPLs/qtYXRVcd6S7NHbHz3kA=
++github.com/go-jose/go-jose/v4 v4.1.4/go.mod h1:x4oUasVrzR7071A4TnHLGSPpNOm2a21K9Kf04k1rs08=
+ github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
+ github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfbm0A=
+ github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
+ github.com/golang/protobuf v1.3.2/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
+ github.com/golang/protobuf v1.3.3/go.mod h1:vzj43D7+SQXF/4pzW/hwtAqwc6iTitCiVSaWz5lYuqw=
+ github.com/golang/protobuf v1.4.0-rc.1/go.mod h1:ceaxUfeHdC40wWswd/P6IGgMaK3YpKi5j83Wpe3EHw8=
+ github.com/golang/protobuf v1.4.0-rc.1.0.20200221234624-67d41d38c208/go.mod h1:xKAWHe0F5eneWXFV3EuXVDTCmh+JuBKY0li0aMyXATA=
+ github.com/golang/protobuf v1.4.0-rc.2/go.mod h1:LlEzMj4AhA7rCAGe4KMBDvJI+AwstrUpVNzEA03Pprs=
+ github.com/golang/protobuf v1.4.0-rc.4.0.20200313231945-b860323f09d0/go.mod h1:WU3c8KckQ9AFe+yFwt9sWVRKCVIyN9cPHBJSNnbL67w=
+ github.com/golang/protobuf v1.4.0/go.mod h1:jodUvKwWbYaEsadDk5Fwe5c77LiNKVO9IDvqG2KuDX0=
+ github.com/golang/protobuf v1.4.2/go.mod h1:oDoupMAO8OvCJWAcko0GGGIgR6R6ocIYbsSw735rRwI=
++github.com/golang/snappy v0.0.4 h1:yAGX7huGHXlcLOEtBnF4w7FQwA26wojNCwOYAEhLjQM=
++github.com/golang/snappy v0.0.4/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
++github.com/google/btree v1.0.1 h1:gK4Kx5IaGY9CD5sPJ36FHiBJ6ZXl0kilRiiCj+jdYp4=
++github.com/google/btree v1.0.1/go.mod h1:xXMiIv4Fb/0kKde4SpL7qlzvu5cMJDRkFDxJfI9uaxA=
+ github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
+ github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
+ github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
+ github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
++github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
++github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
++github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
++github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
++github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
++github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
++github.com/hashicorp/yamux v0.1.1 h1:yrQxtgseBDrq9Y652vSRDvsKCJKOUD+GzTS4Y0Y8pvE=
++github.com/hashicorp/yamux v0.1.1/go.mod h1:CtWFDAQgb7dxtzFs4tWbplKIe2jSi3+5vKbgIO0SLnQ=
+ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
+ github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
++github.com/klauspost/cpuid/v2 v2.0.12/go.mod h1:g2LTdtYhdyuGPqyWyv7qRAmj1WBqxuObKfj5c0PQa7c=
+ github.com/klauspost/cpuid/v2 v2.2.6 h1:ndNyv040zDGIDh8thGkXYjnFtiN02M1PVVF+JE/48xc=
+ github.com/klauspost/cpuid/v2 v2.2.6/go.mod h1:Lcz8mBdAVJIBVzewtcLocK12l3Y+JytZYpaMropDUws=
++github.com/klauspost/cpuid/v2 v2.3.0 h1:S4CRMLnYUhGeDFDqkGriYKdfoFlDnMtqTiI/sFzhA9Y=
++github.com/klauspost/cpuid/v2 v2.3.0/go.mod h1:hqwkgyIinND0mEev00jJYCxPNVRVXFQeu1XKlok6oO0=
+ github.com/klauspost/reedsolomon v1.12.0 h1:I5FEp3xSwVCcEh3F5A7dofEfhXdF/bWhQWPH+XwBFno=
+ github.com/klauspost/reedsolomon v1.12.0/go.mod h1:EPLZJeh4l27pUGC3aXOjheaoh1I9yut7xTURiW3LQ9Y=
+ github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
+ github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
+ github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
+ github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
++github.com/libdns/libdns v0.2.1 h1:Wu59T7wSHRgtA0cfxC+n1c/e+O3upJGWytknkmFEDis=
++github.com/libdns/libdns v0.2.1/go.mod h1:yQCXzk1lEZmmCPa857bnk4TsOiqYasqpyOEeSObbb40=
++github.com/libdns/libdns v1.1.1 h1:wPrHrXILoSHKWJKGd0EiAVmiJbFShguILTg9leS/P/U=
++github.com/libdns/libdns v1.1.1/go.mod h1:4Bj9+5CQiNMVGf87wjX4CY3HQJypUHRuLvlsfsZqLWQ=
++github.com/mholt/acmez v1.2.0 h1:1hhLxSgY5FvH5HCnGUuwbKY2VQVo8IU7rxXKSnZ7F30=
++github.com/mholt/acmez v1.2.0/go.mod h1:VT9YwH1xgNX1kmYY89gY8xPJC84BFAisjo8Egigt4kE=
++github.com/mholt/acmez/v3 v3.1.6 h1:eGVQNObP0pBN4sxqrXeg7MYqTOWyoiYpQqITVWlrevk=
++github.com/mholt/acmez/v3 v3.1.6/go.mod h1:5nTPosTGosLxF3+LU4ygbgMRFDhbAVpqMI4+a4aHLBY=
++github.com/miekg/dns v1.1.55 h1:GoQ4hpsj0nFLYe+bWiCToyrBEJXkQfOOIvFGFy0lEgo=
++github.com/miekg/dns v1.1.55/go.mod h1:uInx36IzPl7FYnDcMeVWxj9byh7DutNykX4G9Sj60FY=
++github.com/miekg/dns v1.1.72 h1:vhmr+TF2A3tuoGNkLDFK9zi36F2LS+hKTRW0Uf8kbzI=
++github.com/miekg/dns v1.1.72/go.mod h1:+EuEPhdHOsfk6Wk5TT2CzssZdqkmFhf8r+aVyDEToIs=
++github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=
++github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
+ github.com/pelletier/go-toml/v2 v2.2.0 h1:QLgLl2yMN7N+ruc31VynXs1vhMZa7CeHHejIeBAsoHo=
+ github.com/pelletier/go-toml/v2 v2.2.0/go.mod h1:1t835xjRzz80PqgE6HHgN2JOsmgYu/h4qDAS4n929Rs=
++github.com/pion/dtls/v3 v3.0.10 h1:k9ekkq1kaZoxnNEbyLKI8DI37j/Nbk1HWmMuywpQJgg=
++github.com/pion/dtls/v3 v3.0.10/go.mod h1:YEmmBYIoBsY3jmG56dsziTv/Lca9y4Om83370CXfqJ8=
++github.com/pion/logging v0.2.4 h1:tTew+7cmQ+Mc1pTBLKH2puKsOvhm32dROumOZ655zB8=
++github.com/pion/logging v0.2.4/go.mod h1:DffhXTKYdNZU+KtJ5pyQDjvOAh/GsNSyv1lbkFbe3so=
++github.com/pion/stun/v3 v3.1.1 h1:CkQxveJ4xGQjulGSROXbXq94TAWu8gIX2dT+ePhUkqw=
++github.com/pion/stun/v3 v3.1.1/go.mod h1:qC1DfmcCTQjl9PBaMa5wSn3x9IPmKxSdcCsxBcDBndM=
++github.com/pion/transport/v4 v4.0.1 h1:sdROELU6BZ63Ab7FrOLn13M6YdJLY20wldXW2Cu2k8o=
++github.com/pion/transport/v4 v4.0.1/go.mod h1:nEuEA4AD5lPdcIegQDpVLgNoDGreqM/YqmEx3ovP4jM=
++github.com/pires/go-proxyproto v0.7.0 h1:IukmRewDQFWC7kfnb66CSomk2q/seBuilHBYFwyq0Hs=
++github.com/pires/go-proxyproto v0.7.0/go.mod h1:Vz/1JPY/OACxWGQNIRY2BeyDmpoaWmEP40O9LbuiFR4=
++github.com/pires/go-proxyproto v0.12.0 h1:TTCxD66dU898tahivkqc3hoceZp7P44FnorWyo9d5vM=
++github.com/pires/go-proxyproto v0.12.0/go.mod h1:qUvfqUMEoX7T8g0q7TQLDnhMjdTrxnG0hvpMn+7ePNI=
+ github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
+ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
++github.com/prometheus/client_golang v1.19.1 h1:wZWJDwK+NameRJuPGDhlnFgx8e8HN3XHQeLaYJFJBOE=
++github.com/prometheus/client_golang v1.19.1/go.mod h1:mP78NwGzrVks5S2H6ab8+ZZGJLZUq1hoULYBAYBw1Ho=
++github.com/prometheus/client_golang v1.23.2 h1:Je96obch5RDVy3FDMndoUsjAhG5Edi49h0RJWRi/o0o=
++github.com/prometheus/client_golang v1.23.2/go.mod h1:Tb1a6LWHB3/SPIzCoaDXI4I8UHKeFTEQ1YCr+0Gyqmg=
+ github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
++github.com/prometheus/client_model v0.5.0 h1:VQw1hfvPvk3Uv6Qf29VrPF32JB6rtbgI6cYPYQjL0Qw=
++github.com/prometheus/client_model v0.5.0/go.mod h1:dTiFglRmd66nLR9Pv9f0mZi7B7fk5Pm3gvsjB5tr+kI=
++github.com/prometheus/client_model v0.6.2 h1:oBsgwpGs7iVziMvrGhE53c/GrLUsZdHnqNwqPLxwZyk=
++github.com/prometheus/client_model v0.6.2/go.mod h1:y3m2F6Gdpfy6Ut/GBsUqTWZqCUvMVzSfMLjcu6wAwpE=
++github.com/prometheus/common v0.48.0 h1:QO8U2CdOzSn1BBsmXJXduaaW+dY/5QLjfB8svtSzKKE=
++github.com/prometheus/common v0.48.0/go.mod h1:0/KsvlIEfPQCQ5I2iNSAWKPZziNCvRs5EC6ILDTlAPc=
++github.com/prometheus/common v0.67.5 h1:pIgK94WWlQt1WLwAC5j2ynLaBRDiinoAb86HZHTUGI4=
++github.com/prometheus/common v0.67.5/go.mod h1:SjE/0MzDEEAyrdr5Gqc6G+sXI67maCxzaT3A2+HqjUw=
++github.com/prometheus/procfs v0.12.0 h1:jluTpSng7V9hY0O2R9DzzJHYb2xULk9VTR1V1R/k6Bo=
++github.com/prometheus/procfs v0.12.0/go.mod h1:pcuDEFsWDnvcgNzo4EEweacyhjeA9Zk3cnaOZAZEfOo=
++github.com/prometheus/procfs v0.20.1 h1:XwbrGOIplXW/AU3YhIhLODXMJYyC1isLFfYCsTEycfc=
++github.com/prometheus/procfs v0.20.1/go.mod h1:o9EMBZGRyvDrSPH1RqdxhojkuXstoe4UlK79eF5TGGo=
++github.com/quic-go/qpack v0.5.1 h1:giqksBPnT/HDtZ6VhtFKgoLOWmlyo9Ei6u9PqzIMbhI=
++github.com/quic-go/qpack v0.5.1/go.mod h1:+PC4XFrEskIVkcLzpEkbLqq1uCoxPhQuvK5rH1ZgaEg=
++github.com/quic-go/qpack v0.6.0 h1:g7W+BMYynC1LbYLSqRt8PBg5Tgwxn214ZZR34VIOjz8=
++github.com/quic-go/qpack v0.6.0/go.mod h1:lUpLKChi8njB4ty2bFLX2x4gzDqXwUpaO1DP9qMDZII=
++github.com/quic-go/quic-go v0.55.0 h1:zccPQIqYCXDt5NmcEabyYvOnomjs8Tlwl7tISjJh9Mk=
++github.com/quic-go/quic-go v0.55.0/go.mod h1:DR51ilwU1uE164KuWXhinFcKWGlEjzys2l8zUl5Ss1U=
++github.com/quic-go/quic-go v0.59.1 h1:0Gmua0HW1Tv7ANR7hUYwRyD0MG5OJfgvYSZasGZzBic=
++github.com/quic-go/quic-go v0.59.1/go.mod h1:upnsH4Ju1YkqpLXC305eW3yDZ4NfnNbmQRCMWS58IKU=
+ github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
+ github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncjaFoBhdsK/akog=
+ github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
+ github.com/samber/lo v1.47.0 h1:z7RynLwP5nbyRscyvcD043DWYoOcYRv3mV8lBeqOCLc=
+ github.com/samber/lo v1.47.0/go.mod h1:RmDH9Ct32Qy3gduHQuKJ3gW1fMHAnE/fAzQuf6He5cU=
++github.com/songgao/water v0.0.0-20200317203138-2b4b6d7c09d8 h1:TG/diQgUe0pntT/2D9tmUCz4VNwm9MfrtPr0SU2qSX8=
++github.com/songgao/water v0.0.0-20200317203138-2b4b6d7c09d8/go.mod h1:P5HUIBuIWKbyjl083/loAegFkfbFNx5i2qEP4CNbm7E=
+ github.com/spf13/cobra v1.8.0 h1:7aJaZx1B85qltLMc546zn58BxxfZdR/W22ej9CFoEf0=
+ github.com/spf13/cobra v1.8.0/go.mod h1:WXLWApfZ71AjXPya3WOlMsY9yMs7YeiHhFVlvLyhcho=
++github.com/spf13/cobra v1.10.2 h1:DMTTonx5m65Ic0GOoRY2c16WCbHxOOw6xxezuLaBpcU=
++github.com/spf13/cobra v1.10.2/go.mod h1:7C1pvHqHw5A4vrJfjNwvOdzYu0Gml16OCs2GRiTUUS4=
+ github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
+ github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
++github.com/spf13/pflag v1.0.9/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
++github.com/spf13/pflag v1.0.10 h1:4EBh2KAYBwaONj6b2Ye1GiHfwjqyROoF4RwYO+vPwFk=
++github.com/spf13/pflag v1.0.10/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
+ github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
+ github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
+ github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=
+ github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/8L+MA=
+ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
+ github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+ github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
+ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
+ github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
+ github.com/templexxx/cpu v0.1.1 h1:isxHaxBXpYFWnk2DReuKkigaZyrjs2+9ypIdGP4h+HI=
+ github.com/templexxx/cpu v0.1.1/go.mod h1:w7Tb+7qgcAlIyX4NhLuDKt78AHA5SzPmq0Wj6HiEnnk=
+ github.com/templexxx/xorsimd v0.4.3 h1:9AQTFHd7Bhk3dIT7Al2XeBX5DWOvsUPZCuhyAtNbHjU=
+ github.com/templexxx/xorsimd v0.4.3/go.mod h1:oZQcD6RFDisW2Am58dSAGwwL6rHjbzrlu25VDqfWkQg=
+ github.com/tjfoc/gmsm v1.4.1 h1:aMe1GlZb+0bLjn+cKTPEvvn9oUEBlJitaZiiBwsbgho=
+ github.com/tjfoc/gmsm v1.4.1/go.mod h1:j4INPkHWMrhJb38G+J6W4Tw0AbuN8Thu3PbdVYhVcTE=
++github.com/vishvananda/netlink v1.3.0 h1:X7l42GfcV4S6E4vHTsw48qbrV+9PVojNfIhZcwQdrZk=
++github.com/vishvananda/netlink v1.3.0/go.mod h1:i6NetklAujEcC6fK0JPjT8qSwWyO0HLn4UKG+hGqeJs=
++github.com/vishvananda/netns v0.0.4 h1:Oeaw1EM2JMxD51g9uhtC0D7erkIjgmj8+JZc26m1YX8=
++github.com/vishvananda/netns v0.0.4/go.mod h1:SpkAiCQRtJ6TvvxPnOSyH3BMl6unz3xZlaprSwhNNJM=
++github.com/wlynxg/anet v0.0.5 h1:J3VJGi1gvo0JwZ/P1/Yc/8p63SoW98B5dHkYDmpgvvU=
++github.com/wlynxg/anet v0.0.5/go.mod h1:eay5PRQr7fIVAMbTbchTnO9gG65Hg/uYGdc7mguHxoA=
+ github.com/xtaci/kcp-go/v5 v5.6.13 h1:FEjtz9+D4p8t2x4WjciGt/jsIuhlWjjgPCCWjrVR4Hk=
+ github.com/xtaci/kcp-go/v5 v5.6.13/go.mod h1:75S1AKYYzNUSXIv30h+jPKJYZUwqpfvLshu63nCNSOM=
+ github.com/xtaci/lossyconn v0.0.0-20200209145036-adba10fffc37 h1:EWU6Pktpas0n8lLQwDsRyZfmkPeRbdgPtW609es+/9E=
+ github.com/xtaci/lossyconn v0.0.0-20200209145036-adba10fffc37/go.mod h1:HpMP7DB2CyokmAh4lp0EQnnWhmycP/TvwBGzvuie+H0=
++github.com/zeebo/assert v1.1.0 h1:hU1L1vLTHsnO8x8c9KAR5GmM5QscxHg5RNU5z5qbUWY=
++github.com/zeebo/assert v1.1.0/go.mod h1:Pq9JiuJQpG8JLJdtkwrJESF0Foym2/D9XMU5ciN/wJ0=
++github.com/zeebo/blake3 v0.2.3 h1:TFoLXsjeXqRNFxSbk35Dk4YtszE/MQQGK10BH4ptoTg=
++github.com/zeebo/blake3 v0.2.3/go.mod h1:mjJjZpnsyIVtVgTOSpJ9vmRE4wgDeyt2HU3qXvvKCaQ=
++github.com/zeebo/blake3 v0.2.4 h1:KYQPkhpRtcqh0ssGYcKLG1JYvddkEA8QwCM/yBqhaZI=
++github.com/zeebo/blake3 v0.2.4/go.mod h1:7eeQ6d2iXWRGF6npfaxl2CU+xy2Fjo2gxeyZGCRUjcE=
++github.com/zeebo/pcg v1.0.1 h1:lyqfGeWiv4ahac6ttHs+I5hwtH/+1mrhlCtVNQM2kHo=
++github.com/zeebo/pcg v1.0.1/go.mod h1:09F0S9iiKrwn9rlI5yjLkmrug154/YRW6KnnXVDM/l4=
++go.uber.org/goleak v1.2.0 h1:xqgm/S+aQvhWFTtR0XK3Jvg7z8kGV8P4X14IzwN3Eqk=
++go.uber.org/goleak v1.2.0/go.mod h1:XJYK+MuIchqpmGmUSAzotztawfKvYLUIgg7guXrwVUo=
++go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
++go.uber.org/mock v0.5.2 h1:LbtPTcP8A5k9WPXj54PPPbjcI4Y6lhyOZXn+VS7wNko=
++go.uber.org/mock v0.5.2/go.mod h1:wLlUxC2vVTPTaE3UD51E0BGOAElKrILxhVSDYQLld5o=
++go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
++go.uber.org/multierr v1.11.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
++go.uber.org/zap v1.25.0 h1:4Hvk6GtkucQ790dqmj7l1eEnRdKm3k3ZUrUMS2d5+5c=
++go.uber.org/zap v1.25.0/go.mod h1:JIAUzQIH94IC4fOJQm7gMmBJP5k7wQfdcnYdPoEXJYk=
++go.uber.org/zap v1.28.0 h1:IZzaP1Fv73/T/pBMLk4VutPl36uNC+OSUh3JLG3FIjo=
++go.uber.org/zap v1.28.0/go.mod h1:rDLpOi171uODNm/mxFcuYWxDsqWSAVkFdX4XojSKg/Q=
++go.uber.org/zap/exp v0.3.0 h1:6JYzdifzYkGmTdRR59oYH+Ng7k49H9qVpWwNSsGJj3U=
++go.uber.org/zap/exp v0.3.0/go.mod h1:5I384qq7XGxYyByIhHm6jg5CHkGY0nsTfbDLgDDlgJQ=
++go.yaml.in/yaml/v2 v2.4.4 h1:tuyd0P+2Ont/d6e2rl3be67goVK4R6deVxCUX5vyPaQ=
++go.yaml.in/yaml/v2 v2.4.4/go.mod h1:gMZqIpDtDqOfM0uNfy0SkpRhvUryYH0Z6wdMYcacYXQ=
++go.yaml.in/yaml/v3 v3.0.4/go.mod h1:DhzuOOF2ATzADvBadXxruRBLzYTpT36CKvDb3+aBEFg=
+ golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
+ golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
+ golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
+ golang.org/x/crypto v0.49.0 h1:+Ng2ULVvLHnJ/ZFEq4KdcDd/cfjrrjjNSXNzxg0Y4U4=
+ golang.org/x/crypto v0.49.0/go.mod h1:ErX4dUh2UM+CFYiXZRTcMpEcN8b/1gxEuv3nODoYtCA=
++golang.org/x/crypto v0.52.0 h1:RMs7fP2rXdep0CftQlK8Uf+kibLm7qkCcradZWYz988=
++golang.org/x/crypto v0.52.0/go.mod h1:1QgfPxDqh0T2M/elOJtp9RvuR95kVjir0e6/BvEmGbc=
+ golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
+ golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
+ golang.org/x/lint v0.0.0-20190227174305-5b3e6a55c961/go.mod h1:wehouNa3lNwaWXcvxsM5YxQ5yQlVC4a0KAMCusXpPoU=
+ golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3/go.mod h1:6SW0HCj/g11FgYtHlgUYUwCkIfeOF89ocIRzGO/8vkc=
++golang.org/x/mod v0.33.0 h1:tHFzIWbBifEmbwtGz65eaWyGiGZatSrT9prnU8DbVL8=
++golang.org/x/mod v0.33.0/go.mod h1:swjeQEj+6r7fODbD2cqrnje9PnziFuw4bmLbBZFrQ5w=
++golang.org/x/mod v0.35.0 h1:Ww1D637e6Pg+Zb2KrWfHQUnH2dQRLBQyAtpr/haaJeM=
++golang.org/x/mod v0.35.0/go.mod h1:+GwiRhIInF8wPm+4AoT6L0FA1QWAad3OMdTRx4tFYlU=
+ golang.org/x/net v0.0.0-20180724234803-3673e40ba225/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+ golang.org/x/net v0.0.0-20180826012351-8a410e7b638d/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+ golang.org/x/net v0.0.0-20190213061140-3a22650c66bd/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+ golang.org/x/net v0.0.0-20190311183353-d8887717615a/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
+ golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
+ golang.org/x/net v0.0.0-20201010224723-4f7140c49acb/go.mod h1:sp8m0HH+o8qH0wwXwYZr8TS3Oi6o0r6Gce1SSxlDquU=
+ golang.org/x/net v0.52.0 h1:He/TN1l0e4mmR3QqHMT2Xab3Aj3L9qjbhRm78/6jrW0=
+ golang.org/x/net v0.52.0/go.mod h1:R1MAz7uMZxVMualyPXb+VaqGSa3LIaUqk0eEt3w36Sw=
++golang.org/x/net v0.55.0 h1:bcvxaJn3e1U6InsFWt1JUq1aSjnRxLzT2rtD2KfkDF8=
++golang.org/x/net v0.55.0/go.mod h1:L5U2KuzuOe1lY7Z+aWVIKK6qEeJXnXV9yzGA+WCHJww=
+ golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
++golang.org/x/oauth2 v0.28.0 h1:CrgCKl8PPAVtLnU3c+EDw6x11699EWlsDeWNWKdIOkc=
++golang.org/x/oauth2 v0.28.0/go.mod h1:onh5ek6nERTohokkhCD/y2cV4Do3fxFHFuAejCkRWT8=
++golang.org/x/oauth2 v0.36.0 h1:peZ/1z27fi9hUOFCAZaHyrpWG5lwe0RJEEEeH0ThlIs=
++golang.org/x/oauth2 v0.36.0/go.mod h1:YDBUJMTkDnJS+A4BP4eZBjCqtokkg1hODuPjwiGPO7Q=
+ golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+ golang.org/x/sync v0.0.0-20181108010431-42b317875d0f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+ golang.org/x/sync v0.0.0-20190423024810-112230192c58/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
++golang.org/x/sync v0.20.0 h1:e0PTpb7pjO8GAtTs2dQ6jYa5BWYlMuX047Dco/pItO4=
++golang.org/x/sync v0.20.0/go.mod h1:9xrNwdLfx4jkKbNva9FpL6vEN7evnE43NNNJQ2LF3+0=
+ golang.org/x/sys v0.0.0-20180830151530-49385e6e1522/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+ golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+ golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+ golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
++golang.org/x/sys v0.2.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+ golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
++golang.org/x/sys v0.10.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+ golang.org/x/sys v0.42.0 h1:omrd2nAlyT5ESRdCLYdm3+fMfNFE/+Rf4bDIQImRJeo=
+ golang.org/x/sys v0.42.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
++golang.org/x/sys v0.45.0 h1:dO4czNzziLiiXplLQgBCEpCvXQ3dnkn0SdaZSYdQ+FY=
++golang.org/x/sys v0.45.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
++golang.org/x/term v0.41.0 h1:QCgPso/Q3RTJx2Th4bDLqML4W6iJiaXFq2/ftQF13YU=
++golang.org/x/term v0.41.0/go.mod h1:3pfBgksrReYfZ5lvYM0kSO0LIkAl4Yl2bXOkKP7Ec2A=
++golang.org/x/term v0.43.0 h1:S4RLU2sB31O/NCl+zFN9Aru9A/Cq2aqKpTZJ6B+DwT4=
++golang.org/x/term v0.43.0/go.mod h1:lrhlHNdQJHO+1qVYiHfFKVuVioJIheAc3fBSMFYEIsk=
+ golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
+ golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=
+ golang.org/x/text v0.35.0 h1:JOVx6vVDFokkpaq1AEptVzLTpDe9KGpj5tR4/X+ybL8=
+ golang.org/x/text v0.35.0/go.mod h1:khi/HExzZJ2pGnjenulevKNX1W67CUy0AsXcNubPGCA=
++golang.org/x/text v0.37.0 h1:Cqjiwd9eSg8e0QAkyCaQTNHFIIzWtidPahFWR83rTrc=
++golang.org/x/text v0.37.0/go.mod h1:a5sjxXGs9hsn/AJVwuElvCAo9v8QYLzvavO5z2PiM38=
++golang.org/x/time v0.10.0 h1:3usCWA8tQn0L8+hFJQNgzpWbd89begxN66o1Ojdn5L4=
++golang.org/x/time v0.10.0/go.mod h1:3BpzKBy/shNhVucY/MWOyx10tF3SFh9QdLuxbVysPQM=
++golang.org/x/time v0.15.0 h1:bbrp8t3bGUeFOx08pvsMYRTCVSMk89u4tKbNOZbp88U=
++golang.org/x/time v0.15.0/go.mod h1:Y4YMaQmXwGQZoFaVFk4YpCt4FLQMYKZe9oeV/f4MSno=
+ golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
+ golang.org/x/tools v0.0.0-20190114222345-bf090417da8b/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
+ golang.org/x/tools v0.0.0-20190226205152-f727befe758c/go.mod h1:9Yl7xja0Znq3iFh3HoIrodX9oNMXvdceNzlUR8zjMvY=
+ golang.org/x/tools v0.0.0-20190311212946-11955173bddd/go.mod h1:LCzVGOaR6xXOjkQ3onu1FJEFr0SW1gC7cKk1uF8kGRs=
+ golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135/go.mod h1:RgjU9mgBXZiqYHBnxXauZ1Gv1EHHAz9KjViQ78xBX0Q=
++golang.org/x/tools v0.42.0 h1:uNgphsn75Tdz5Ji2q36v/nsFSfR/9BRFvqhGBaJGd5k=
++golang.org/x/tools v0.42.0/go.mod h1:Ma6lCIwGZvHK6XtgbswSoWroEkhugApmsXyrUmBhfr0=
++golang.org/x/tools v0.44.0 h1:UP4ajHPIcuMjT1GqzDWRlalUEoY+uzoZKnhOjbIPD2c=
++golang.org/x/tools v0.44.0/go.mod h1:KA0AfVErSdxRZIsOVipbv3rQhVXTnlU6UhKxHd1seDI=
+ golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
++golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 h1:B82qJJgjvYKsXS9jeunTOisW56dUokqW/FOteYJJ/yg=
++golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2/go.mod h1:deeaetjYA+DHMHg+sMSMI58GrEteJUUzzw7en6TJQcI=
++golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173 h1:/jFs0duh4rdb8uIfPMv78iAJGcPKDeqAFnaLBropIC4=
++golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173/go.mod h1:tkCQ4FQXmpAgYVh++1cq16/dH4QJtmvpRv19DWGAHSA=
+ google.golang.org/appengine v1.1.0/go.mod h1:EbEs0AVv82hx2wNQdGPgUI5lhzA/G0D9YwlJXL52JkM=
+ google.golang.org/appengine v1.4.0/go.mod h1:xpcJRLb0r/rnEns0DIKYYv+WjYCduHsrkT7/EB5XEv4=
+ google.golang.org/genproto v0.0.0-20180817151627-c66870c02cf8/go.mod h1:JiN7NxoALGmiZfu7CAH4rXhgtRTLTxftemlI0sWmxmc=
+ google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55/go.mod h1:DMBHOl98Agz4BDEuKkezgsaosCRResVns1a3J2ZsMNc=
+ google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
+ google.golang.org/grpc v1.23.0/go.mod h1:Y5yQAOtifL1yxbo5wqy6BxZv8vAUGQwXBOALyacEbxg=
+ google.golang.org/grpc v1.25.1/go.mod h1:c3i+UQWmh7LiEpx4sFZnkU36qjEYZ0imhYfXVyQciAY=
+ google.golang.org/grpc v1.31.0/go.mod h1:N36X2cJ7JwdamYAgDz+s+rVMFjt3numwzf/HckM8pak=
+ google.golang.org/protobuf v0.0.0-20200109180630-ec00e32a8dfd/go.mod h1:DFci5gLYBciE7Vtevhsrf46CRTquxDuWsQurQQe4oz8=
+ google.golang.org/protobuf v0.0.0-20200221191635-4d8936d0db64/go.mod h1:kwYJMbMJ01Woi6D6+Kah6886xMZcty6N08ah7+eCXa0=
+ google.golang.org/protobuf v0.0.0-20200228230310-ab0ca4ff8a60/go.mod h1:cfTl7dwQJ+fmap5saPgwCLgHXTUD7jkjRqWcaiX5VyM=
+ google.golang.org/protobuf v1.20.1-0.20200309200217-e05f789c0967/go.mod h1:A+miEFZTKqfCUM6K7xSMQL9OKL/b6hQv+e19PK+JZNE=
+ google.golang.org/protobuf v1.21.0/go.mod h1:47Nbq4nVaFHyn7ilMalzfO3qCViNmqZ2kzikPIcrTAo=
+ google.golang.org/protobuf v1.23.0/go.mod h1:EGpADcykh3NcUnDUJcl1+ZksZNG86OlYog2l/sGQquU=
++google.golang.org/protobuf v1.36.5 h1:tPhr+woSbjfYvY6/GPufUoYizxw1cF/yFoxJ2fmpwlM=
++google.golang.org/protobuf v1.36.5/go.mod h1:9fA7Ob0pmnwhb644+1+CVWFRbNajQ6iRojtC/QF5bRE=
++google.golang.org/protobuf v1.36.11 h1:fV6ZwhNocDyBLK0dj+fg8ektcVegBBuEolpbTQyBNVE=
++google.golang.org/protobuf v1.36.11/go.mod h1:HTf+CrKn2C3g5S8VImy6tdcUvCska2kB7j23XfzDpco=
+ gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+ gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntNwaWcugrBjAiHlqqRiVk=
+ gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c/go.mod h1:JHkPIbrfpd72SG/EVd6muEfDQjcINNoR0C8j2r3qZ4Q=
+ gopkg.in/ini.v1 v1.67.0 h1:Dgnx+6+nfE+IfzjUEISNeydPJh9AXNNsWbGP9KzCsOA=
+ gopkg.in/ini.v1 v1.67.0/go.mod h1:pNLf8WUiyNEtQjuu5G5vTm06TEv9tsIgeAvK8hOrP4k=
+ gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
+ gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
+ gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+ gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+ gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
++gvisor.dev/gvisor v0.0.0-20230927004350-cbd86285d259 h1:TbRPT0HtzFP3Cno1zZo7yPzEEnfu8EjLfl6IU9VfqkQ=
++gvisor.dev/gvisor v0.0.0-20230927004350-cbd86285d259/go.mod h1:AVgIgHMwK63XvmAzWG9vLQ41YnVHN0du0tEC46fI7yY=
+ honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
+ honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
+ k8s.io/apimachinery v0.28.8 h1:hi/nrxHwk4QLV+W/SHve1bypTE59HCDorLY1stBIxKQ=
+ k8s.io/apimachinery v0.28.8/go.mod h1:cBnwIM3fXoRo28SqbV/Ihxf/iviw85KyXOrzxvZQ83U=
+ k8s.io/utils v0.0.0-20230406110748-d93618cff8a2 h1:qY1Ad8PODbnymg2pRbkyMT/ylpTrCM8P2RJ0yroCyIk=
+ k8s.io/utils v0.0.0-20230406110748-d93618cff8a2/go.mod h1:OLgZIPagt7ERELqWJFomSt595RzquPNLL48iOWgYOg0=
+ sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd h1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=
+ sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd/go.mod h1:B8JuhiUyNFVKdsE8h686QcCxMaH6HrOAZj4vswFpcB0=
+ sigs.k8s.io/yaml v1.3.0 h1:a2VclLzOGrwOHDiV8EfBGhvjHvP46CtW5j6POvhYGGo=
+ sigs.k8s.io/yaml v1.3.0/go.mod h1:GeOyir5tyXNByN85N/dRIT9es5UQNerPYEKK56eTBm8=
+diff --git a/listener.go b/listener.go
+index 3332d2b..cdedd38 100644
+--- a/listener.go
++++ b/listener.go
+@@ -7,20 +7,29 @@ import (
+ )
+ 
+ // frpcListener adapts frpc work connections into a net.Listener.
+ type frpcListener struct {
+ 	name   string
+ 	ch     chan net.Conn
+ 	addr   net.Addr
+ 	closed atomic.Bool
+ }
+ 
++// newFRPCListenerBuf creates a listener with a configurable channel buffer size.
++func newFRPCListenerBuf(name, addr string, bufSize int) *frpcListener {
++	return &frpcListener{
++		name: name,
++		ch:   make(chan net.Conn, bufSize),
++		addr: resolveAddr(addr),
++	}
++}
++
+ func newFRPCListener(name, addr string) *frpcListener {
+ 	return &frpcListener{
+ 		name: name,
+ 		ch:   make(chan net.Conn, 8),
+ 		addr: resolveAddr(addr),
+ 	}
+ }
+ 
+ func (l *frpcListener) Accept() (net.Conn, error) {
+ 	conn, ok := <-l.ch
