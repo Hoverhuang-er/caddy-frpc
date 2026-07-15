@@ -92,6 +92,14 @@ spec:
         - name: config
           configMap:
             name: caddy-config
+```
+
+[English](README.md) | [日本語版](README_jp.md)
+
+Caddy 应用模块，将 [frpc](https://github.com/fatedier/frp) 作为 Go 库嵌入并以 visitor 模式运行。
+
+frpc visitor 创建本地 TCP 监听器，通过 frps 将连接隧道转发到远程 frpc 客户端上注册的服务。Caddy 管理 frpc 生命周期，并可反向代理到 visitor 监听器，应用完整的中间件链。
+
 ## 架构
 
 ```mermaid

@@ -90,6 +90,7 @@ spec:
         - name: config
           configMap:
             name: caddy-config
+```
 
 [中文版](README_zh.md) | [日本語版](README_jp.md)
 

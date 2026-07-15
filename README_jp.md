@@ -93,6 +93,14 @@ spec:
         - name: config
           configMap:
             name: caddy-config
+```
+
+[English](README.md) | [中文版](README_zh.md)
+
+[frpc](https://github.com/fatedier/frp) を Go ライブラリとして埋め込み、visitor モードで動作させる Caddy アプリケーションモジュール。
+
+frpc visitor はローカル TCP リスナーを作成し、frps を介してリモート frpc クライアントに登録されたサービスへのトンネル接続を確立します。Caddy が frpc のライフサイクルを管理し、visitor リスナーへのリバースプロキシを通じて完全なミドルウェアチェーンを適用できます。
+
 ## アーキテクチャ
 
 ```mermaid
