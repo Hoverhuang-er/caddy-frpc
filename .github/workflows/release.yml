@@ -37,8 +37,8 @@ jobs:
           echo "Building ${BIN} (${{ matrix.goos }}/${{ matrix.goarch }}) ..."
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
             xcaddy build "$CADDY_VER" \
-            --with github.com/Hoverhuang-er/caddy-frpc@${{ github.ref_name }} \
-            -o "dist/${BIN}"
+            --with github.com/Hoverhuang-er/caddy-frpc@${{ github.ref_name }}
+          mv caddy "dist/${BIN}"
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.goos }}-${{ matrix.goarch }}
