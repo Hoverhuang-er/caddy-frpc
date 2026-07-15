@@ -14,7 +14,7 @@
 
 [中文版](README_zh.md) | [日本語版](README_jp.md)
 
-Caddy app module that embeds [frpc](https://github.com/fatedier/frp) as a Go library and runs it in visitor mode. **AI Native** — designed, developed, and tested entirely through AI-driven engineering workflows.
+Caddy app module that embeds [frpc](https://github.com/fatedier/frp) as a Go library and runs it in visitor mode. **AI Native** — 100% of the design was mined from local Mem0 operational memory and driven by Skills, an AI-native engineering workflow.
 
 frpc visitors create local TCP listeners that tunnel connections through frps to services registered on remote frpc clients. Caddy manages the frpc lifecycle and can reverse-proxy to visitor listeners, applying its full middleware chain.
 

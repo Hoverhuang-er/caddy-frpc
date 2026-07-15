@@ -97,7 +97,7 @@ spec:
 
 [English](README.md) | [日本語版](README_jp.md)
 
-Caddy 应用模块，将 [frpc](https://github.com/fatedier/frp) 作为 Go 库嵌入并以 visitor 模式运行。**AI Native** — 全程通过 AI 驱动的工程流程设计、开发和测试。
+Caddy 应用模块，将 [frpc](https://github.com/fatedier/frp) 作为 Go 库嵌入并以 visitor 模式运行。**AI Native** — 100% 的设计源自本地 Mem0 操作记忆的需求发掘，并通过 Skill 驱动实现。
 
 frpc visitor 创建本地 TCP 监听器，通过 frps 将连接隧道转发到远程 frpc 客户端上注册的服务。Caddy 管理 frpc 生命周期，并可反向代理到 visitor 监听器，应用完整的中间件链。
 

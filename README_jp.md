@@ -98,7 +98,7 @@ spec:
 
 [English](README.md) | [中文版](README_zh.md)
 
-[frpc](https://github.com/fatedier/frp) を Go ライブラリとして埋め込み、visitor モードで動作させる Caddy アプリケーションモジュール。**AI Native** — AI 駆動のエンジニアリングワークフローを通じて設計、開発、テストされています。
+[frpc](https://github.com/fatedier/frp) を Go ライブラリとして埋め込み、visitor モードで動作させる Caddy アプリケーションモジュール。**AI Native** — 設計の 100% がローカル Mem0 操作メモリからの要件発掘と Skill 駆動によって実現されました。
 
 frpc visitor はローカル TCP リスナーを作成し、frps を介してリモート frpc クライアントに登録されたサービスへのトンネル接続を確立します。Caddy が frpc のライフサイクルを管理し、visitor リスナーへのリバースプロキシを通じて完全なミドルウェアチェーンを適用できます。
 
