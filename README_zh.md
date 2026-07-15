@@ -7,8 +7,91 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/hxgm/caddy-frpc.svg)](https://pkg.go.dev/github.com/hxgm/caddy-frpc)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](https://github.com/hxgm/caddy-frpc/pulls)
 [![CI](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml/badge.svg)](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io-blue?logo=docker)](https://github.com/Hoverhuang-er/caddy-frpc/pkgs/container/caddy-frpc)
 
 [English](README.md) | [日本語版](README_jp.md)
+
+## 快速开始
+
+### 下载二进制
+
+从 [GitHub Releases](https://github.com/Hoverhuang-er/caddy-frpc/releases) 下载最新的编译好的 caddy 二进制：
+
+```bash
+# Linux AMD64
+wget -O caddy https://github.com/Hoverhuang-er/caddy-frpc/releases/latest/download/caddy_wh_frpc_linux_amd64
+chmod +x caddy
+
+# macOS ARM64 (Apple Silicon)
+wget -O caddy https://github.com/Hoverhuang-er/caddy-frpc/releases/latest/download/caddy_wh_frpc_darwin_arm64
+chmod +x caddy
+```
+
+验证插件已嵌入：
+```bash
+./caddy list-modules | grep frpc
+# 输出: caddy.apps.frpc
+```
+
+### Docker
+
+```bash
+docker pull ghcr.io/hoverhuang-er/caddy-frpc:latest
+
+docker run -v ./frpc.toml:/etc/caddy/frpc.toml \
+  -v ./Caddyfile:/etc/caddy/Caddyfile \
+  ghcr.io/hoverhuang-er/caddy-frpc:latest
+```
+
+### Kubernetes
+
+创建 ConfigMap 存放 frpc 和 Caddy 配置，然后部署：
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: caddy-config
+data:
+  Caddyfile: |
+    { frpc ./frpc.toml }
+    :8080 { reverse_proxy 127.0.0.1:8000 }
+  frpc.toml: |
+    serverAddr = "frps.example.com"
+    serverPort = 7000
+    auth.token = "my-token"
+    [[visitors]]
+    name = "my-service"
+    type = "stcp"
+    serverName = "remote-service"
+    secretKey = "my-secret"
+    bindAddr = "127.0.0.1"
+    bindPort = 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caddy-frpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: caddy-frpc }
+  template:
+    metadata:
+      labels: { app: caddy-frpc }
+    spec:
+      containers:
+        - name: caddy
+          image: ghcr.io/hoverhuang-er/caddy-frpc:latest
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /etc/caddy
+      volumes:
+        - name: config
+          configMap:
+            name: caddy-config
 ## 架构
 
 ```mermaid
