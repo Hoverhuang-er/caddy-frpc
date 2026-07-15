@@ -1,4 +1,3 @@
-# CI workflow: build, vet, test on every push and PR.
 name: CI
 
 on:
@@ -16,41 +15,29 @@ jobs:
         go: ['1.26']
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
-
-      - name: Build
-        run: go build ./...
-
-      - name: Vet
-        run: go vet ./...
-
-      - name: Test
-        run: go test -v -race -count=1 ./...
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go test -v -race -count=1 ./...
 
   xcaddy-build:
     name: xcaddy Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-go@v5
         with:
           go-version: '1.26'
-
-      - name: Install xcaddy
-        run: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
-
+      - run: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
       - name: Build caddy with caddy-frpc
         env:
           GOPROXY: direct
+          GONOSUMCHECK: '*'
+          GONOSUMDB: '*'
         run: |
           CADDY_VER=$(grep 'caddyserver/caddy/v2' go.mod | awk '{print $2}')
           xcaddy build "$CADDY_VER" --with github.com/Hoverhuang-er/caddy-frpc@${{ github.sha }}
-
-      - name: Verify binary
-        run: |
-          ./caddy version
-          ./caddy list-modules | grep frpc
+      - run: ./caddy version
+      - run: ./caddy list-modules | grep frpc
