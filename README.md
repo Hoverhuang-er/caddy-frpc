@@ -9,6 +9,16 @@
 [![CI](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml/badge.svg)](https://github.com/Hoverhuang-er/caddy-frpc/actions/workflows/ci.yml)
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io-blue?logo=docker)](https://github.com/Hoverhuang-er/caddy-frpc/pkgs/container/caddy-frpc)
 
+---
+
+[中文版](README_zh.md) | [日本語版](README_jp.md)
+
+Caddy app module that embeds [frpc](https://github.com/fatedier/frp) as a Go library and runs it in visitor mode.
+
+frpc visitors create local TCP listeners that tunnel connections through frps to services registered on remote frpc clients. Caddy manages the frpc lifecycle and can reverse-proxy to visitor listeners, applying its full middleware chain.
+
+---
+
 ## Quick Start
 
 ### Download Binary
@@ -92,11 +102,6 @@ spec:
             name: caddy-config
 ```
 
-[中文版](README_zh.md) | [日本語版](README_jp.md)
-
-Caddy app module that embeds [frpc](https://github.com/fatedier/frp) as a Go library and runs it in visitor mode.
-
-frpc visitors create local TCP listeners that tunnel connections through frps to services registered on remote frpc clients. Caddy manages the frpc lifecycle and can reverse-proxy to visitor listeners, applying its full middleware chain.
 
 ## Architecture
 
@@ -162,7 +167,7 @@ flowchart LR
 - `context.Context` cancellation propagates from Caddy's lifecycle to every visitor goroutine
 - `atomic.Bool` (in frpcListener, removed but pattern proven) ensures idempotent close
 
-## Visitor Mode
+## Supported Config Formats
 
 The module accepts frpc config files in these formats:
 
@@ -172,6 +177,17 @@ The module accepts frpc config files in these formats:
 | YAML   | `.yaml` / `.yml` | |
 | JSON   | `.json`   | |
 | INI    | `.ini`    | Legacy format, deprecated by frp |
+
+## Visitor Mode
+
+This module operates in frpc **visitor** mode (STCP/XTCP/SUDP visitors). In this mode:
+
+1. **frpc A** registers a proxy on frps (type = stcp, with secretKey)
+2. **Caddy-frpc** (this module) configures a visitor that connects to frpc A's service through frps
+3. The visitor creates a local TCP listener on `bindAddr:bindPort`
+4. Caddy's HTTP server can reverse-proxy to that local port
+
+The module does **not** support frpc proxy mode (where frpc receives work connections from frps). Only `[[visitors]]` from the config file are processed; `[[proxies]]` are logged and skipped.
 
 ## Usage
 
@@ -304,16 +320,6 @@ Embed the frpc config directly in Caddy's JSON config, no separate frpc.toml nee
 | `./caddy run --config frpc.toml` | Caddy tries to parse frpc.toml as a Caddyfile. It will fail. |
 | `./caddy run --config Caddyfile` | Correct. Caddy reads Caddyfile which references frpc.toml. |
 
-## Visitor Mode
-
-This module operates in frpc **visitor** mode (STCP/XTCP/SUDP visitors). In this mode:
-
-1. **frpc A** registers a proxy on frps (type = stcp, with secretKey)
-2. **Caddy-frpc** (this module) configures a visitor that connects to frpc A's service through frps
-3. The visitor creates a local TCP listener on `bindAddr:bindPort`
-4. Caddy's HTTP server can reverse-proxy to that local port
-
-The module does **not** support frpc proxy mode (where frpc receives work connections from frps). Only `[[visitors]]` from the config file are processed; `[[proxies]]` are logged and skipped.
 
 ## Prerequisites
 

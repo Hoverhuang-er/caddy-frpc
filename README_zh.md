@@ -173,6 +173,17 @@ flowchart LR
 | YAML | `.yaml` / `.yml` | |
 | JSON | `.json` | |
 | INI | `.ini` | 旧格式，已被 frp 弃用 |
+
+## Visitor 模式
+
+本模块运行在 frpc **visitor** 模式（STCP/XTCP/SUDP visitor）。流程如下：
+
+1. **frpc A** 在 frps 上注册一个代理（type = stcp，含 secretKey）
+2. **Caddy-frpc**（本模块）配置一个 visitor，通过 frps 连接到 frpc A 的服务
+3. visitor 在 `bindAddr:bindPort` 创建本地 TCP 监听器
+4. Caddy 的 HTTP 服务器反向代理到该本地端口
+
+本模块不支持 frpc proxy 模式（即 frpc 从 frps 接收工作连接）。仅处理 `[[visitors]]`，`[[proxies]]` 会被记录警告并跳过。
 ## 使用方法
 
 ### 0. 构建
@@ -304,16 +315,6 @@ Caddyfile 引用你的 frpc 配置文件。这里 Caddyfile 是必需的。
 | `./caddy run --config frpc.toml` | Caddy 试图把 frpc.toml 当作 Caddyfile 解析，会失败 |
 | `./caddy run --config Caddyfile` | 正确。Caddy 读取 Caddyfile，Caddyfile 引用 frpc.toml |
 
-## Visitor 模式
-
-本模块运行在 frpc **visitor** 模式（STCP/XTCP/SUDP visitor）。流程如下：
-
-1. **frpc A** 在 frps 上注册一个代理（type = stcp，含 secretKey）
-2. **Caddy-frpc**（本模块）配置一个 visitor，通过 frps 连接到 frpc A 的服务
-3. visitor 在 `bindAddr:bindPort` 创建本地 TCP 监听器
-4. Caddy 的 HTTP 服务器反向代理到该本地端口
-
-本模块不支持 frpc proxy 模式（即 frpc 从 frps 接收工作连接）。仅处理 `[[visitors]]`，`[[proxies]]` 会被记录警告并跳过。
 
 ## 前置条件
 

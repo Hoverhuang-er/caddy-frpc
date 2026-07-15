@@ -175,6 +175,17 @@ flowchart LR
 | JSON | `.json` | |
 | INI | `.ini` | レガシー形式、frp により非推奨 |
 
+## Visitor モード
+
+本モジュールは frpc **visitor** モード（STCP/XTCP/SUDP visitor）で動作します。
+
+1. **frpc A** が frps にプロキシを登録します（type = stcp、secretKey 付き）
+2. **Caddy-frpc**（本モジュール）が visitor を設定し、frps 経由で frpc A のサービスに接続します
+3. visitor が `bindAddr:bindPort` にローカル TCP リスナーを作成します
+4. Caddy の HTTP サーバーがそのローカルポートにリバースプロキシします
+
+本モジュールは frpc プロキシモード（frpc が frps から作業接続を受信する方式）をサポートしません。設定ファイル内の `[[visitors]]` のみが処理され、`[[proxies]]` は警告を記録してスキップされます。
+
 ## 使い方
 
 ### 0. ビルド
@@ -306,16 +317,6 @@ frpc 設定を Caddy の JSON 設定に直接埋め込みます。別途 frpc.to
 | `./caddy run --config frpc.toml` | Caddy が frpc.toml を Caddyfile として解析しようとし、失敗します |
 | `./caddy run --config Caddyfile` | 正しい使い方。Caddy が Caddyfile を読み込み、Caddyfile が frpc.toml を参照します |
 
-## Visitor モード
-
-本モジュールは frpc **visitor** モード（STCP/XTCP/SUDP visitor）で動作します。
-
-1. **frpc A** が frps にプロキシを登録します（type = stcp、secretKey 付き）
-2. **Caddy-frpc**（本モジュール）が visitor を設定し、frps 経由で frpc A のサービスに接続します
-3. visitor が `bindAddr:bindPort` にローカル TCP リスナーを作成します
-4. Caddy の HTTP サーバーがそのローカルポートにリバースプロキシします
-
-本モジュールは frpc プロキシモード（frpc が frps から作業接続を受信する方式）をサポートしません。設定ファイル内の `[[visitors]]` のみが処理され、`[[proxies]]` は警告を記録してスキップされます。
 
 ## 前提条件
 
